@@ -1,5 +1,226 @@
 [
   {
+    "id": "CS-A4ED7132",
+    "userId": "usr-1792664447949-m5jwl",
+    "userEmail": "sauravrandwa@gmail.com",
+    "reporter": "saurav",
+    "description": "my tau's house caught fire",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "dal bazar gawarlior",
+    "lat": 23.209466,
+    "lon": 77.411265,
+    "photos": [],
+    "createdAt": "2026-10-22T10:21:37.132Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T10:21:37.132Z",
+        "action": "Complaint submitted",
+        "by": "saurav (sauravrandwa@gmail.com)"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 52,
+    "priority": "Medium",
+    "factors": {
+      "safety": 90,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-4C8C4168",
+    "userId": "local-usr-1792663642407-jh85",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "there is blockage of sewer near my house",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "dal bazar gawarlior",
+    "lat": 23.209005,
+    "lon": 77.410618,
+    "photos": [],
+    "createdAt": "2026-10-22T10:19:14.168Z",
+    "status": "Resolved - Awaiting Citizen",
+    "history": [
+      {
+        "at": "2026-10-22T10:19:14.168Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)"
+      },
+      {
+        "at": "2026-10-22T10:19:36.972Z",
+        "action": "status changed: Filed → Resolved - Awaiting Citizen",
+        "by": "System Administrator (Admin)"
+      },
+      {
+        "at": "2026-10-22T10:19:36.972Z",
+        "action": "Administrator review saved",
+        "by": "System Administrator (Admin)"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-70EE6951",
+    "userId": null,
+    "userEmail": "",
+    "reporter": "saurav",
+    "description": "there is too much garbage inside my locality",
+    "category": "Sanitation & Garbage",
+    "department": "Sanitation Department",
+    "landmark": "kolar road",
+    "lat": 23.209509,
+    "lon": 77.411599,
+    "photos": [],
+    "createdAt": "2026-10-22T10:15:36.951Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T10:15:36.951Z",
+        "action": "Complaint submitted",
+        "by": "saurav"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-33A00622",
+    "userId": "usr-1792663890476-4nfqi",
+    "userEmail": "aarav@test.com",
+    "reporter": "Aarav Patel",
+    "description": "Severe water pipe leakage near sector 4 garden",
+    "category": "Water Supply",
+    "department": "Water Supply Department",
+    "landmark": "Sector 4",
+    "lat": null,
+    "lon": null,
+    "photos": [],
+    "createdAt": "2026-10-22T10:11:30.621Z",
+    "status": "In Progress",
+    "history": [
+      {
+        "at": "2026-10-22T10:11:30.621Z",
+        "action": "Complaint submitted",
+        "by": "Aarav Patel (aarav@test.com)"
+      },
+      {
+        "at": "2026-10-22T10:11:30.647Z",
+        "action": "status changed: Filed → In Progress",
+        "by": "Admin Officer (Admin)"
+      },
+      {
+        "at": "2026-10-22T10:11:30.647Z",
+        "action": "adminNote changed:  → Plumbing team dispatched to Sector 4",
+        "by": "Admin Officer (Admin)"
+      },
+      {
+        "at": "2026-10-22T10:11:30.647Z",
+        "action": "Administrator review saved",
+        "by": "Admin Officer (Admin)"
+      }
+    ],
+    "adminNote": "Plumbing team dispatched to Sector 4",
+    "duplicates": [],
+    "score": 43,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 85,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-58317551",
+    "userId": "usr-1792663687052-omde1",
+    "userEmail": "rohit@test.com",
+    "reporter": "Rohit User",
+    "description": "Dangerous open manhole near bus stop causing accidents",
+    "category": "Public Safety",
+    "department": "Public Safety / Ward Office",
+    "landmark": "Bus Stand",
+    "lat": null,
+    "lon": null,
+    "photos": [],
+    "createdAt": "2026-10-22T10:08:17.551Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T10:08:17.551Z",
+        "action": "Complaint submitted",
+        "by": "Rohit User (rohit@test.com)"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 58,
+    "priority": "Medium",
+    "factors": {
+      "safety": 90,
+      "severity": 55,
+      "impact": 80,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-4DEE5013",
+    "reporter": "khembhai",
+    "description": "electricity is not coming in my house",
+    "category": "Streetlights & Electricity",
+    "department": "Electrical Department",
+    "landmark": "hostel 10",
+    "lat": 23.209466,
+    "lon": 77.411265,
+    "photos": [],
+    "createdAt": "2026-10-22T09:30:35.013Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T09:30:35.013Z",
+        "action": "Complaint submitted",
+        "by": "Citizen"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
     "id": "CS-0FE14980",
     "reporter": "saurav",
     "description": "light is not coming",
