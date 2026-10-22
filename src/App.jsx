@@ -55,20 +55,38 @@ async function readApiResponse(response) {
 }
 
 const priorityTone = {
-  Critical: 'bg-red-100 text-red-700',
-  High: 'bg-orange-100 text-orange-700',
-  Medium: 'bg-amber-100 text-amber-700',
-  Low: 'bg-emerald-100 text-emerald-700'
+  Critical: 'bg-red-100 text-red-700 border-red-200',
+  High: 'bg-orange-100 text-orange-700 border-orange-200',
+  Medium: 'bg-amber-100 text-amber-700 border-amber-200',
+  Low: 'bg-emerald-100 text-emerald-700 border-emerald-200'
 }
 
-const formatDate = value => new Date(value).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-const location = item => (item.lat == null ? 'Location not provided' : `${Number(item.lat).toFixed(5)}, ${Number(item.lon).toFixed(5)}`)
+const statusTone = {
+  Filed: 'bg-blue-50 text-blue-700 border-blue-200',
+  Assigned: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  'In Progress': 'bg-amber-50 text-amber-700 border-amber-200',
+  'Resolved - Awaiting Citizen': 'bg-purple-100 text-purple-800 border-purple-300 font-extrabold animate-pulse',
+  Reopened: 'bg-rose-100 text-rose-800 border-rose-300 font-bold',
+  Closed: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+}
+
+const formatDate = value =>
+  new Date(value).toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+
+const location = item =>
+  item.lat == null ? 'Location not provided' : `${Number(item.lat).toFixed(5)}, ${Number(item.lon).toFixed(5)}`
 
 function App() {
   const [view, setView] = useState('citizen')
   const [complaints, setComplaints] = useState([])
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(true)
+  const [selectedComplaint, setSelectedComplaint] = useState(null)
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('civicsense_user')
@@ -93,14 +111,12 @@ function App() {
           }
         })
         .catch(() => {
-          // Token expired or invalid
           localStorage.removeItem('civicsense_token')
           localStorage.removeItem('civicsense_user')
           setUser(null)
         })
     }
 
-    // Check DB status
     fetch('/api/health')
       .then(r => r.json())
       .then(status => setDbStatus(status))
@@ -110,11 +126,23 @@ function App() {
   const refreshComplaints = async () => {
     setLoading(true)
     try {
+      if (!user && view !== 'admin') {
+        setComplaints([])
+        setLoading(false)
+        return
+      }
+
       const url = view === 'admin' ? `${API}?all=true` : API
       const response = await fetch(url, { headers: getAuthHeaders() })
       const items = await readApiResponse(response)
       if (!Array.isArray(items)) throw new Error('The API returned an unexpected complaints response.')
       setComplaints(items)
+
+      // Sync selected complaint if open
+      if (selectedComplaint) {
+        const found = items.find(i => i.id === selectedComplaint.id)
+        if (found) setSelectedComplaint(found)
+      }
     } catch (error) {
       setNotice(error.message || 'Could not reach the API. Start the backend with npm run dev.')
     } finally {
@@ -149,6 +177,7 @@ function App() {
     localStorage.removeItem('civicsense_token')
     localStorage.removeItem('civicsense_user')
     setUser(null)
+    setSelectedComplaint(null)
     setView('citizen')
     setNotice('Logged out successfully.')
   }
@@ -160,6 +189,69 @@ function App() {
       return
     }
     setView(targetView)
+  }
+
+  // Citizen Accept or Reject resolution action
+  const handleFeedback = async (id, action, reason = '') => {
+    try {
+      const response = await fetch(`${API}/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(true),
+        body: JSON.stringify({ action, reason })
+      })
+      const updated = await readApiResponse(response)
+      setComplaints(prev => prev.map(c => (c.id === id ? updated : c)))
+      if (selectedComplaint && selectedComplaint.id === id) {
+        setSelectedComplaint(updated)
+      }
+      setNotice(
+        action === 'accept'
+          ? `Resolution accepted! Complaint ${id} is now Closed.`
+          : `Resolution rejected. Complaint ${id} has been Reopened.`
+      )
+    } catch (error) {
+      setNotice(error.message || 'Action failed.')
+    }
+  }
+
+  // Admin or Citizen Delete complaint
+  const handleDelete = async id => {
+    if (!window.confirm(`Are you sure you want to delete complaint ${id}? This cannot be undone.`)) {
+      return
+    }
+    try {
+      const response = await fetch(`${API}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      })
+      await readApiResponse(response)
+      setComplaints(prev => prev.filter(c => c.id !== id))
+      if (selectedComplaint && selectedComplaint.id === id) {
+        setSelectedComplaint(null)
+      }
+      setNotice(`Complaint ${id} was deleted successfully.`)
+    } catch (error) {
+      setNotice(error.message || 'Deletion failed.')
+    }
+  }
+
+  // Admin patch update
+  const handleSaveReview = async (id, changes) => {
+    try {
+      const response = await fetch(`${API}/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(true),
+        body: JSON.stringify(changes)
+      })
+      const updated = await readApiResponse(response)
+      setComplaints(prev => prev.map(c => (c.id === id ? updated : c)))
+      if (selectedComplaint && selectedComplaint.id === id) {
+        setSelectedComplaint(updated)
+      }
+      setNotice(`Review saved for ${id}.`)
+    } catch (error) {
+      setNotice(error.message || 'Update failed.')
+    }
   }
 
   return (
@@ -254,6 +346,9 @@ function App() {
             user={user}
             complaints={complaints}
             onOpenAuth={() => setShowAuthModal(true)}
+            onSelect={item => setSelectedComplaint(item)}
+            onFeedback={handleFeedback}
+            onDelete={handleDelete}
             onCreated={item => {
               setComplaints(current => [item, ...current])
               setNotice(`Complaint ${item.id} submitted successfully!`)
@@ -263,7 +358,9 @@ function App() {
           <Admin
             user={user}
             complaints={complaints}
-            setComplaints={setComplaints}
+            onSelect={item => setSelectedComplaint(item)}
+            onSave={handleSaveReview}
+            onDelete={handleDelete}
             notify={setNotice}
           />
         )}
@@ -282,13 +379,24 @@ function App() {
           onSuccess={handleLoginSuccess}
         />
       )}
+
+      {selectedComplaint && (
+        <ComplaintDetailModal
+          item={selectedComplaint}
+          user={user}
+          onClose={() => setSelectedComplaint(null)}
+          onFeedback={handleFeedback}
+          onSaveReview={handleSaveReview}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   )
 }
 
 function AuthModal({ onClose, onSuccess }) {
-  const [mode, setMode] = useState('login') // 'login' or 'signup'
-  const [role, setRole] = useState('user') // 'user' or 'admin'
+  const [mode, setMode] = useState('login')
+  const [role, setRole] = useState('user')
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -305,9 +413,10 @@ function AuthModal({ onClose, onSuccess }) {
 
     try {
       const endpoint = mode === 'login' ? `${AUTH_API}/login` : `${AUTH_API}/signup`
-      const body = mode === 'login'
-        ? { email: form.email, password: form.password }
-        : { name: form.name, email: form.email, password: form.password, role }
+      const body =
+        mode === 'login'
+          ? { email: form.email, password: form.password }
+          : { name: form.name, email: form.email, password: form.password, role }
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -355,11 +464,13 @@ function AuthModal({ onClose, onSuccess }) {
           </button>
         </div>
 
-        {/* Tab switcher */}
         <div className="mt-4 flex rounded-xl bg-slate-100 p-1 text-xs font-bold">
           <button
             type="button"
-            onClick={() => { setMode('login'); setError('') }}
+            onClick={() => {
+              setMode('login')
+              setError('')
+            }}
             className={`flex-1 rounded-lg py-2 transition ${
               mode === 'login' ? 'bg-white text-civic shadow-sm' : 'text-slate-500'
             }`}
@@ -368,7 +479,10 @@ function AuthModal({ onClose, onSuccess }) {
           </button>
           <button
             type="button"
-            onClick={() => { setMode('signup'); setError('') }}
+            onClick={() => {
+              setMode('signup')
+              setError('')
+            }}
             className={`flex-1 rounded-lg py-2 transition ${
               mode === 'signup' ? 'bg-white text-civic shadow-sm' : 'text-slate-500'
             }`}
@@ -468,7 +582,6 @@ function AuthModal({ onClose, onSuccess }) {
           </button>
         </form>
 
-        {/* Quick Demo Credentials */}
         <div className="mt-5 border-t border-slate-100 pt-4">
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
             Quick Demo Auto-Fill:
@@ -495,7 +608,7 @@ function AuthModal({ onClose, onSuccess }) {
   )
 }
 
-function Citizen({ user, complaints, onCreated, onOpenAuth }) {
+function Citizen({ user, complaints, onCreated, onOpenAuth, onSelect, onFeedback, onDelete }) {
   const [form, setForm] = useState({
     reporter: user?.name || '',
     description: '',
@@ -508,7 +621,6 @@ function Citizen({ user, complaints, onCreated, onOpenAuth }) {
   const [submitting, setSubmitting] = useState(false)
   const [locationStatus, setLocationStatus] = useState('Use GPS or enter coordinates manually.')
 
-  // Update default reporter name when user state updates
   useEffect(() => {
     if (user?.name) {
       setForm(prev => ({ ...prev, reporter: user.name }))
@@ -706,7 +818,10 @@ function Citizen({ user, complaints, onCreated, onOpenAuth }) {
 
         <section className="panel">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-extrabold">Your submitted issues</h2>
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-800">Your submitted issues</h2>
+              <span className="text-xs text-slate-400">Click any issue to view full history & actions</span>
+            </div>
             <span className="pill bg-slate-100 text-slate-600">
               {user ? `${complaints.length} reports` : 'Login required'}
             </span>
@@ -731,7 +846,16 @@ function Citizen({ user, complaints, onCreated, onOpenAuth }) {
           ) : (
             <div className="space-y-3">
               {complaints.length ? (
-                complaints.map(item => <ComplaintCard key={item.id} item={item} />)
+                complaints.map(item => (
+                  <ComplaintCard
+                    key={item.id}
+                    item={item}
+                    user={user}
+                    onSelect={() => onSelect(item)}
+                    onFeedback={onFeedback}
+                    onDelete={onDelete}
+                  />
+                ))
               ) : (
                 <Empty text="You haven't submitted any complaints yet. Report an issue using the form." />
               )}
@@ -743,7 +867,7 @@ function Citizen({ user, complaints, onCreated, onOpenAuth }) {
   )
 }
 
-function Admin({ user, complaints, setComplaints, notify }) {
+function Admin({ user, complaints, onSelect, onSave, onDelete, notify }) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
@@ -764,21 +888,6 @@ function Admin({ user, complaints, setComplaints, notify }) {
     [complaints, query, status, priority]
   )
 
-  const patch = async (id, changes) => {
-    try {
-      const response = await fetch(`${API}/${id}`, {
-        method: 'PATCH',
-        headers: getAuthHeaders(true),
-        body: JSON.stringify(changes)
-      })
-      const item = await readApiResponse(response)
-      setComplaints(current => current.map(old => (old.id === id ? item : old)))
-      notify(`Review saved for ${id}.`)
-    } catch (error) {
-      notify(error.message || 'Update failed.')
-    }
-  }
-
   const open = complaints.filter(item => item.status !== 'Closed').length
   const critical = complaints.filter(item => item.priority === 'Critical' && item.status !== 'Closed').length
   const resolved = complaints.filter(item => ['Closed', 'Resolved - Awaiting Citizen'].includes(item.status)).length
@@ -796,7 +905,7 @@ function Admin({ user, complaints, setComplaints, notify }) {
           ['Total reports', complaints.length, 'All submitted complaints in database'],
           ['Open issues', open, 'Pending resolution'],
           ['Critical', critical, 'Requires urgent review'],
-          ['Awaiting / resolved', resolved, 'Pending citizen confirmation may remain']
+          ['Awaiting / resolved', resolved, 'Pending citizen confirmation or closed']
         ].map(([label, value, note]) => (
           <div key={label} className="panel p-4">
             <p className="text-xs font-bold text-slate-500">{label}</p>
@@ -808,7 +917,10 @@ function Admin({ user, complaints, setComplaints, notify }) {
       <div className="grid items-start gap-5 lg:grid-cols-[1.1fr_.9fr]">
         <section className="panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-extrabold">Complaint queue</h2>
+            <div>
+              <h2 className="text-lg font-extrabold">Complaint queue</h2>
+              <span className="text-xs text-slate-400">Click any card to inspect full process history</span>
+            </div>
             <span className="pill bg-blue-50 text-civic">{complaints.length} total</span>
           </div>
           <div className="mb-4 flex flex-wrap gap-2">
@@ -833,13 +945,21 @@ function Admin({ user, complaints, setComplaints, notify }) {
           </div>
           <div className="space-y-3">
             {filtered.length ? (
-              filtered.map(item => <AdminCard key={item.id} item={item} onSave={patch} />)
+              filtered.map(item => (
+                <AdminCard
+                  key={item.id}
+                  item={item}
+                  onSelect={() => onSelect(item)}
+                  onSave={onSave}
+                  onDelete={onDelete}
+                />
+              ))
             ) : (
               <Empty text="No complaints match these filters." />
             )}
           </div>
         </section>
-        <Insights complaints={complaints} />
+        <Insights complaints={complaints} onSelect={onSelect} />
       </div>
     </>
   )
@@ -876,45 +996,124 @@ function Empty({ text }) {
   )
 }
 
-function ComplaintCard({ item }) {
+function ComplaintCard({ item, user, onSelect, onFeedback, onDelete }) {
+  const isAwaitingCitizen = item.status === 'Resolved - Awaiting Citizen'
+  const isOwner = user && (item.userId === user.id || item.userEmail?.toLowerCase() === user.email?.toLowerCase())
+  const [rejecting, setRejecting] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
+
   return (
-    <article className="rounded-xl border border-slate-200 p-4 transition hover:border-slate-300">
-      <div className="flex justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-slate-800">
+    <article
+      onClick={onSelect}
+      className="group cursor-pointer rounded-xl border border-slate-200 bg-white p-4 transition-all duration-150 hover:border-civic hover:shadow-md"
+    >
+      <div className="flex justify-between items-start gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-bold text-slate-800 group-hover:text-civic transition">
               {item.id} · {item.category}
             </h3>
             {item.userEmail && (
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[11px] text-slate-400">
                 by {item.reporter} ({item.userEmail})
               </span>
             )}
           </div>
-          <p className="mt-1 text-sm text-slate-600">{item.description}</p>
+          <p className="mt-1.5 text-sm text-slate-600 line-clamp-2">{item.description}</p>
         </div>
         {item.photos?.[0] && (
-          <img className="h-14 w-14 rounded-lg object-cover" src={item.photos[0]} alt="Reported issue" />
+          <img className="h-14 w-14 rounded-lg object-cover border border-slate-200 shrink-0" src={item.photos[0]} alt="Reported issue" />
         )}
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className={`pill ${priorityTone[item.priority]}`}>{item.priority} priority</span>
-        <span className="pill bg-blue-50 text-blue-700">{item.status}</span>
-        <span className="pill bg-slate-100 text-slate-600">{item.department}</span>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <span className={`pill border ${priorityTone[item.priority] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+          {item.priority} priority
+        </span>
+        <span className={`pill border ${statusTone[item.status] || 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+          {item.status}
+        </span>
+        <span className="pill bg-slate-100 text-slate-600 border border-slate-200">{item.department}</span>
       </div>
+
       {item.adminNote && (
-        <div className="mt-2.5 rounded-lg bg-amber-50/80 p-2 text-xs text-amber-900 border border-amber-200/50">
+        <div className="mt-2.5 rounded-lg bg-amber-50/90 p-2 text-xs text-amber-900 border border-amber-200/60">
           <span className="font-bold">Admin note:</span> {item.adminNote}
         </div>
       )}
-      <p className="mt-3 text-xs text-slate-500">
-        📍 {item.landmark || 'No landmark'} · {location(item)} · {formatDate(item.createdAt)}
-      </p>
+
+      {/* Citizen Accept / Reject prompt if resolved */}
+      {isAwaitingCitizen && isOwner && (
+        <div
+          onClick={e => e.stopPropagation()}
+          className="mt-3.5 rounded-xl border-2 border-purple-300 bg-purple-50/80 p-3 shadow-sm"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-bold text-purple-950 flex items-center gap-1.5">
+              <span>🔔</span> Officer marked this resolved. Do you accept this fix?
+            </span>
+          </div>
+
+          {!rejecting ? (
+            <div className="mt-2.5 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onFeedback(item.id, 'accept')}
+                className="btn py-1.5 px-3 text-xs bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
+              >
+                ✓ Accept & Close
+              </button>
+              <button
+                type="button"
+                onClick={() => setRejecting(true)}
+                className="btn py-1.5 px-3 text-xs bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100"
+              >
+                ✕ Reject & Reopen
+              </button>
+            </div>
+          ) : (
+            <div className="mt-2 space-y-2">
+              <input
+                className="field text-xs py-1.5"
+                placeholder="Reason (e.g. pothole was only half filled)..."
+                value={rejectReason}
+                onChange={e => setRejectReason(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onFeedback(item.id, 'reject', rejectReason)
+                    setRejecting(false)
+                  }}
+                  className="btn py-1 px-3 text-xs bg-rose-600 text-white hover:bg-rose-700 font-bold"
+                >
+                  Confirm Reopen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRejecting(false)}
+                  className="btn-secondary py-1 px-2.5 text-xs"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500">
+        <span>📍 {item.landmark || 'No landmark'} · {formatDate(item.createdAt)}</span>
+        <span className="text-civic font-semibold flex items-center gap-1 group-hover:underline">
+          View details & process →
+        </span>
+      </div>
     </article>
   )
 }
 
-function AdminCard({ item, onSave }) {
+function AdminCard({ item, onSelect, onSave, onDelete }) {
   const [values, setValues] = useState({
     category: item.category,
     department: item.department,
@@ -923,7 +1122,6 @@ function AdminCard({ item, onSave }) {
     adminNote: item.adminNote || ''
   })
 
-  // Sync if item updates from backend
   useEffect(() => {
     setValues({
       category: item.category,
@@ -937,47 +1135,107 @@ function AdminCard({ item, onSave }) {
   const change = event => setValues(current => ({ ...current, [event.target.name]: event.target.value }))
 
   return (
-    <article className="rounded-xl border border-slate-200 p-4">
-      <ComplaintCard item={item} />
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-        <select className="field" name="category" value={values.category} onChange={change}>
-          {categories.map(value => (
-            <option key={value}>{value}</option>
-          ))}
-        </select>
-        <select className="field" name="department" value={values.department} onChange={change}>
-          {departments.map(value => (
-            <option key={value}>{value}</option>
-          ))}
-        </select>
-        <select className="field" name="priority" value={values.priority} onChange={change}>
-          {Object.keys(priorityTone).map(value => (
-            <option key={value}>{value}</option>
-          ))}
-        </select>
-        <select className="field" name="status" value={values.status} onChange={change}>
-          {statusOptions.map(value => (
-            <option key={value}>{value}</option>
-          ))}
-        </select>
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div onClick={onSelect} className="cursor-pointer group">
+        <div className="flex justify-between items-start gap-3">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-bold text-slate-800 group-hover:text-civic transition">
+                {item.id} · {item.category}
+              </h3>
+              {item.userEmail && (
+                <span className="text-[11px] text-slate-500">
+                  reported by <b>{item.reporter}</b> ({item.userEmail})
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-slate-600">{item.description}</p>
+          </div>
+          {item.photos?.[0] && (
+            <img className="h-14 w-14 rounded-lg object-cover border border-slate-200" src={item.photos[0]} alt="Reported issue" />
+          )}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className={`pill border ${priorityTone[item.priority] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+            {item.priority} priority
+          </span>
+          <span className={`pill border ${statusTone[item.status] || 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+            {item.status}
+          </span>
+          <span className="pill bg-slate-100 text-slate-600 border border-slate-200">{item.department}</span>
+        </div>
+        <p className="mt-2 text-xs text-slate-400">
+          📍 {item.landmark || 'No landmark'} · {location(item)} · {formatDate(item.createdAt)} · <span className="text-civic font-bold">Inspect Process & History →</span>
+        </p>
       </div>
-      <div className="mt-2 flex gap-2">
-        <input
-          name="adminNote"
-          value={values.adminNote}
-          onChange={change}
-          className="field"
-          placeholder="Add administrator review note"
-        />
-        <button onClick={() => onSave(item.id, values)} className="btn-primary whitespace-nowrap">
-          Save review
-        </button>
+
+      {/* Quick Admin Action Controls */}
+      <div className="mt-3 border-t border-slate-100 pt-3">
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="text-[11px] font-bold text-slate-500">
+            Category
+            <select className="field mt-0.5 text-xs py-1.5" name="category" value={values.category} onChange={change}>
+              {categories.map(value => (
+                <option key={value}>{value}</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-[11px] font-bold text-slate-500">
+            Department
+            <select className="field mt-0.5 text-xs py-1.5" name="department" value={values.department} onChange={change}>
+              {departments.map(value => (
+                <option key={value}>{value}</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-[11px] font-bold text-slate-500">
+            Priority
+            <select className="field mt-0.5 text-xs py-1.5" name="priority" value={values.priority} onChange={change}>
+              {Object.keys(priorityTone).map(value => (
+                <option key={value}>{value}</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-[11px] font-bold text-slate-500">
+            Status
+            <select className="field mt-0.5 text-xs py-1.5" name="status" value={values.status} onChange={change}>
+              {statusOptions.map(value => (
+                <option key={value}>{value}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="mt-2 flex gap-2">
+          <input
+            name="adminNote"
+            value={values.adminNote}
+            onChange={change}
+            className="field text-xs py-1.5 flex-1"
+            placeholder="Add administrator review note"
+          />
+          <button
+            type="button"
+            onClick={() => onSave(item.id, values)}
+            className="btn-primary text-xs py-1.5 px-3 whitespace-nowrap"
+          >
+            Save review
+          </button>
+          <button
+            type="button"
+            onClick={() => onDelete(item.id)}
+            title="Delete this complaint"
+            className="btn bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 text-xs py-1.5 px-3"
+          >
+            🗑
+          </button>
+        </div>
       </div>
     </article>
   )
 }
 
-function Insights({ complaints }) {
+function Insights({ complaints, onSelect }) {
   const workload = departments.map(department => [
     department,
     complaints.filter(item => item.department === department && item.status !== 'Closed').length
@@ -986,17 +1244,24 @@ function Insights({ complaints }) {
 
   return (
     <section className="panel">
-      <h2 className="text-lg font-extrabold">Location intelligence</h2>
-      <p className="mt-1 text-sm text-slate-500">Reports with valid coordinates appear below.</p>
+      <h2 className="text-lg font-extrabold text-slate-800">Location intelligence</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        Click any located report to inspect coordinates and history.
+      </p>
       <div className="mt-4 space-y-2">
         {located.length ? (
           located.slice(0, 8).map(item => (
-            <div key={item.id} className="rounded-lg bg-slate-50 p-3 text-xs">
-              <b>
-                {item.id} · {item.landmark || item.category}
-              </b>
+            <div
+              key={item.id}
+              onClick={() => onSelect(item)}
+              className="cursor-pointer rounded-lg bg-slate-50 p-3 text-xs transition hover:bg-blue-50/80 hover:border-civic border border-transparent"
+            >
+              <div className="flex justify-between items-center">
+                <b>{item.id} · {item.landmark || item.category}</b>
+                <span className={`pill text-[10px] ${statusTone[item.status] || 'bg-slate-100'}`}>{item.status}</span>
+              </div>
               <p className="mt-1 text-slate-500">
-                {location(item)} · {item.priority}
+                {location(item)} · {item.priority} priority
               </p>
             </div>
           ))
@@ -1005,7 +1270,7 @@ function Insights({ complaints }) {
         )}
       </div>
       <hr className="my-5 border-slate-200" />
-      <h2 className="text-lg font-extrabold">Department workload</h2>
+      <h2 className="text-lg font-extrabold text-slate-800">Department workload</h2>
       <div className="mt-3 space-y-3">
         {workload.map(([department, count]) => (
           <div key={department}>
@@ -1023,6 +1288,316 @@ function Insights({ complaints }) {
         ))}
       </div>
     </section>
+  )
+}
+
+function ComplaintDetailModal({ item, user, onClose, onFeedback, onSaveReview, onDelete }) {
+  const isAdmin = user?.role === 'admin'
+  const isOwner = user && (item.userId === user.id || item.userEmail?.toLowerCase() === user.email?.toLowerCase())
+  const isAwaitingCitizen = item.status === 'Resolved - Awaiting Citizen'
+
+  const [rejecting, setRejecting] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
+
+  const [adminValues, setAdminValues] = useState({
+    category: item.category,
+    department: item.department,
+    priority: item.priority,
+    status: item.status,
+    adminNote: item.adminNote || ''
+  })
+
+  const handleAdminChange = e => {
+    setAdminValues(prev => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm overflow-y-auto">
+      <div className="relative my-8 w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-start justify-between border-b border-slate-200 p-5 shrink-0">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-mono font-black text-slate-500 uppercase">{item.id}</span>
+              <span className={`pill border ${statusTone[item.status] || 'bg-slate-100 text-slate-700'}`}>
+                {item.status}
+              </span>
+              <span className={`pill border ${priorityTone[item.priority] || 'bg-slate-100 text-slate-700'}`}>
+                {item.priority} priority
+              </span>
+            </div>
+            <h2 className="mt-1 text-xl font-black text-slate-800">{item.category}</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Reported by <b className="text-slate-700">{item.reporter}</b> {item.userEmail && `(${item.userEmail})`} on {formatDate(item.createdAt)}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="p-5 space-y-5 overflow-y-auto flex-1">
+          {/* Citizen Acceptance / Rejection Banner */}
+          {isOwner && isAwaitingCitizen && (
+            <div className="rounded-xl border-2 border-purple-300 bg-purple-50 p-4 shadow-sm">
+              <div className="flex items-start gap-2.5">
+                <span className="text-xl">🔔</span>
+                <div className="flex-1">
+                  <h4 className="text-sm font-extrabold text-purple-900">
+                    Municipal authorities marked this problem as RESOLVED
+                  </h4>
+                  <p className="mt-1 text-xs text-purple-700 leading-relaxed">
+                    Please verify if the issue has been resolved at the site. You can accept this fix to close the complaint or reject it to reopen the case.
+                  </p>
+
+                  {!rejecting ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onFeedback(item.id, 'accept')}
+                        className="btn py-2 px-4 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
+                      >
+                        ✓ Accept Resolution (Close Ticket)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRejecting(true)}
+                        className="btn py-2 px-4 text-xs font-bold bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100"
+                      >
+                        ✕ Reject Resolution (Reopen)
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-3 space-y-2 rounded-lg bg-white p-3 border border-purple-200">
+                      <label className="text-xs font-bold text-slate-700 block">
+                        Reason for rejection (What is still incomplete?):
+                      </label>
+                      <textarea
+                        className="field text-xs min-h-20"
+                        placeholder="e.g. The leak was patched but the pavement crater is still unfilled..."
+                        value={rejectReason}
+                        onChange={e => setRejectReason(e.target.value)}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onFeedback(item.id, 'reject', rejectReason)
+                            setRejecting(false)
+                          }}
+                          className="btn py-1.5 px-4 text-xs bg-rose-600 text-white hover:bg-rose-700 font-bold"
+                        >
+                          Confirm & Reopen Ticket
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setRejecting(false)}
+                          className="btn-secondary py-1.5 px-3 text-xs"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Description */}
+          <div>
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Problem Description</h4>
+            <div className="mt-1.5 rounded-xl bg-slate-50 p-4 text-sm text-slate-700 border border-slate-100 leading-relaxed">
+              {item.description}
+            </div>
+          </div>
+
+          {/* Location & Department */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 p-3.5 bg-slate-50/50">
+              <span className="text-[11px] font-bold text-slate-500 uppercase">Assigned Department</span>
+              <p className="mt-1 font-bold text-sm text-slate-800">{item.department}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 p-3.5 bg-slate-50/50">
+              <span className="text-[11px] font-bold text-slate-500 uppercase">Landmark & GPS</span>
+              <p className="mt-1 text-xs text-slate-700 font-semibold">{item.landmark || 'No landmark specified'}</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">{location(item)}</p>
+              {item.lat != null && item.lon != null && (
+                <a
+                  href={`https://www.google.com/maps?q=${item.lat},${item.lon}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1.5 inline-block text-[11px] font-bold text-civic hover:underline"
+                >
+                  📍 Open in Google Maps ↗
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Photos */}
+          {item.photos && item.photos.length > 0 && (
+            <div>
+              <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Attached Photographs</h4>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {item.photos.map((photo, i) => (
+                  <a key={i} href={photo} target="_blank" rel="noreferrer" className="group">
+                    <img
+                      src={photo}
+                      alt={`Photo ${i + 1}`}
+                      className="h-28 w-28 rounded-xl object-cover border border-slate-200 shadow-sm group-hover:scale-105 transition"
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Admin note */}
+          {item.adminNote && (
+            <div>
+              <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">Administrator Note</h4>
+              <div className="mt-1.5 rounded-xl bg-amber-50 p-3 text-xs text-amber-900 border border-amber-200">
+                {item.adminNote}
+              </div>
+            </div>
+          )}
+
+          {/* Process Timeline / Audit Trail */}
+          <div>
+            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2.5">
+              Resolution Process & Audit Trail
+            </h4>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+              <ol className="relative border-l border-slate-300 ml-2 space-y-4">
+                {item.history && item.history.length > 0 ? (
+                  item.history.map((step, idx) => (
+                    <li key={idx} className="ml-4">
+                      <div className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full border-2 border-white bg-civic shadow-sm" />
+                      <div className="text-xs font-semibold text-slate-800">{step.action}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        by <span className="font-medium text-slate-600">{step.by}</span> · {formatDate(step.at)}
+                      </div>
+                    </li>
+                  ))
+                ) : (
+                  <li className="ml-4 text-xs text-slate-500">No history events recorded yet.</li>
+                )}
+              </ol>
+            </div>
+          </div>
+
+          {/* Admin Management Controls (Inside Modal for comprehensive oversight) */}
+          {isAdmin && (
+            <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-4">
+              <h4 className="text-xs font-black text-blue-900 uppercase tracking-wider mb-2">
+                Administrator Actions
+              </h4>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <label className="text-[11px] font-bold text-slate-600">
+                  Category
+                  <select
+                    className="field text-xs py-1.5 mt-0.5 bg-white"
+                    name="category"
+                    value={adminValues.category}
+                    onChange={handleAdminChange}
+                  >
+                    {categories.map(value => (
+                      <option key={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-[11px] font-bold text-slate-600">
+                  Department
+                  <select
+                    className="field text-xs py-1.5 mt-0.5 bg-white"
+                    name="department"
+                    value={adminValues.department}
+                    onChange={handleAdminChange}
+                  >
+                    {departments.map(value => (
+                      <option key={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-[11px] font-bold text-slate-600">
+                  Priority
+                  <select
+                    className="field text-xs py-1.5 mt-0.5 bg-white"
+                    name="priority"
+                    value={adminValues.priority}
+                    onChange={handleAdminChange}
+                  >
+                    {Object.keys(priorityTone).map(value => (
+                      <option key={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-[11px] font-bold text-slate-600">
+                  Status
+                  <select
+                    className="field text-xs py-1.5 mt-0.5 bg-white"
+                    name="status"
+                    value={adminValues.status}
+                    onChange={handleAdminChange}
+                  >
+                    {statusOptions.map(value => (
+                      <option key={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label className="text-[11px] font-bold text-slate-600 mt-2 block">
+                Review Note
+                <input
+                  name="adminNote"
+                  value={adminValues.adminNote}
+                  onChange={handleAdminChange}
+                  className="field text-xs py-1.5 mt-0.5 bg-white"
+                  placeholder="Official status note for citizen..."
+                />
+              </label>
+              <div className="mt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => onSaveReview(item.id, adminValues)}
+                  className="btn-primary py-1.5 px-4 text-xs font-bold"
+                >
+                  Save Review Updates
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Modal Footer with Authority Delete / Close */}
+        <div className="flex items-center justify-between border-t border-slate-200 p-4 bg-slate-50 rounded-b-2xl shrink-0">
+          {(isAdmin || isOwner) ? (
+            <button
+              type="button"
+              onClick={() => onDelete(item.id)}
+              className="btn py-2 px-3.5 text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 flex items-center gap-1.5"
+            >
+              <span>🗑</span> {isAdmin ? 'Delete Complaint (Admin)' : 'Delete My Report'}
+            </button>
+          ) : (
+            <div />
+          )}
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn-secondary py-2 px-5 text-xs font-bold"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 

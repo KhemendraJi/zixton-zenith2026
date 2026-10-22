@@ -1,5 +1,38 @@
 [
   {
+    "id": "CS-C1381315",
+    "userId": "usr-1792667584245-t37lm",
+    "userEmail": "sauravrandi@gmail.com",
+    "reporter": "saurav randi",
+    "description": "fire near my house",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "dal bazar gawarlior",
+    "lat": 23.209896,
+    "lon": 77.410985,
+    "photos": [],
+    "createdAt": "2026-10-22T11:13:31.315Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T11:13:31.315Z",
+        "action": "Complaint submitted",
+        "by": "saurav randi (sauravrandi@gmail.com)"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 52,
+    "priority": "Medium",
+    "factors": {
+      "safety": 90,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
     "id": "CS-C1B37122",
     "userId": "usr-1792667317102-2ax4x",
     "userEmail": "user2_1792667316983@test.com",
@@ -111,7 +144,7 @@
     "lon": 77.410618,
     "photos": [],
     "createdAt": "2026-10-22T10:19:14.168Z",
-    "status": "Resolved - Awaiting Citizen",
+    "status": "Closed",
     "history": [
       {
         "at": "2026-10-22T10:19:14.168Z",
@@ -127,6 +160,11 @@
         "at": "2026-10-22T10:19:36.972Z",
         "action": "Administrator review saved",
         "by": "System Administrator (Admin)"
+      },
+      {
+        "at": "2026-10-22T11:25:44.236Z",
+        "action": "Resolution accepted by Citizen: Citizen confirmed the fix is complete.",
+        "by": "Demo Citizen (Citizen)"
       }
     ],
     "adminNote": "",
