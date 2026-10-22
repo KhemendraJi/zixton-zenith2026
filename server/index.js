@@ -13,11 +13,20 @@ import {
   findUserById,
   createUser,
   getComplaints,
+  getAllComplaintsRaw,
   getComplaintById,
   createComplaint,
   updateComplaint,
-  deleteComplaint
+  deleteComplaint,
+  linkComplaintDuplicates
 } from './db.js'
+import {
+  clusterComplaints,
+  compareComplaints,
+  compareComplaintsWithAI,
+  haversineDistance
+} from './clustering.js'
+import { classifyWithGemini } from './gemini.js'
 import {
   hashPassword,
   comparePassword,
@@ -206,22 +215,80 @@ app.get('/api/auth/me', async (req, res) => {
   })
 })
 
-// ==================== COMPLAINTS ROUTES ====================
+// ==================== CLUSTERS & COMPLAINTS ROUTES ====================
+
+// GET /api/clusters: Returns detected issue clusters & hotspot analytics
+app.get('/api/clusters', async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.json({ clusters: [], totalClusters: 0, totalDuplicateReports: 0 })
+    }
+
+    const allComplaints = await getAllComplaintsRaw()
+    const { clusters } = clusterComplaints(allComplaints)
+
+    const totalDuplicateReports = clusters.reduce((sum, c) => sum + (c.count - 1), 0)
+    res.json({
+      clusters,
+      totalClusters: clusters.length,
+      totalDuplicateReports,
+      hotspots: clusters.slice(0, 5)
+    })
+  } catch (error) {
+    console.error('Fetch clusters error:', error)
+    res.status(500).json({ message: 'Could not fetch complaint clusters.' })
+  }
+})
 
 // GET complaints:
 // If unauthenticated: returns empty array [].
-// If authenticated citizen: returns only the citizen's own submitted problems.
-// If authenticated admin: returns all complaints.
+// If authenticated citizen: returns citizen's own complaints annotated with cluster community data.
+// If authenticated admin: returns all complaints annotated with duplicate/cluster status, supporting filters:
+//   - ?hideDuplicates=true or ?filter=unique: returns only master/unique complaints (hiding duplicates)
+//   - ?filter=clusters_only: returns only complaints that are part of a duplicate cluster
+//   - ?clusterId=...: returns complaints belonging to a specific cluster
 app.get('/api/complaints', async (req, res) => {
   try {
     if (!req.user) {
       return res.json([])
     }
 
-    const items = await getComplaints({
-      user: req.user
-    })
-    res.json(items)
+    const allComplaints = await getAllComplaintsRaw()
+    const { clusters, annotatedComplaints } = clusterComplaints(allComplaints)
+
+    const isAdmin = req.user.role === 'admin'
+    const isCitizen = req.user.role === 'user'
+
+    if (isCitizen) {
+      const userEmail = (req.user.email || '').toLowerCase()
+      const userId = req.user.id || req.user._id
+      const citizenComplaints = annotatedComplaints.filter(
+        c =>
+          (c.userId && (c.userId === userId || c.userId?.toString() === userId?.toString())) ||
+          (c.userEmail && c.userEmail.toLowerCase() === userEmail)
+      )
+      return res.json(citizenComplaints)
+    }
+
+    if (isAdmin) {
+      let filtered = annotatedComplaints
+
+      const { hideDuplicates, filter, clusterId } = req.query
+
+      if (clusterId) {
+        filtered = filtered.filter(c => c.clusterId === clusterId)
+      } else if (hideDuplicates === 'true' || filter === 'unique') {
+        // Return only master tickets and solo tickets, filtering out redundant duplicates
+        filtered = filtered.filter(c => !c.isDuplicate)
+      } else if (filter === 'clusters_only') {
+        // Return only issues that have 2 or more reports (hotspots)
+        filtered = filtered.filter(c => c.clusterCount > 1)
+      }
+
+      return res.json(filtered)
+    }
+
+    res.json([])
   } catch (error) {
     console.error('Fetch complaints error:', error)
     res.status(500).json({ message: 'Could not fetch complaints.' })
@@ -229,7 +296,8 @@ app.get('/api/complaints', async (req, res) => {
 })
 
 // POST complaint:
-// Requires authentication. User must be logged in to report a problem.
+// Requires authentication. Detects duplicate complaints in the vicinity, links them,
+// escalates priority factor for multi-reported incidents, and saves complaint.
 app.post('/api/complaints', upload.array('photos', 3), async (req, res) => {
   try {
     if (!req.user) {
@@ -258,13 +326,87 @@ app.post('/api/complaints', upload.array('photos', 3), async (req, res) => {
       return res.status(400).json({ message: 'Please enter valid latitude and longitude.' })
     }
 
-    const category = classify(description, chosen)
-    const analysis = priority(description)
+    let category = chosen || ''
+    let department = chosen ? (departments[chosen] || 'General Civic Services') : ''
+    let categorizedBy = chosen ? 'Citizen Selection' : ''
+
+    // If category was not explicitly selected by citizen, classify with Google Gemini AI
+    if (!category) {
+      const aiClassification = await classifyWithGemini(description)
+      if (aiClassification && aiClassification.category) {
+        category = aiClassification.category
+        department = aiClassification.department
+        categorizedBy = `Google Gemini (${aiClassification.model})`
+      } else {
+        category = classify(description)
+        department = departments[category] || 'General Civic Services'
+        categorizedBy = 'Heuristic Rules Engine'
+      }
+    }
+
+    let analysis = priority(description)
     const now = new Date().toISOString()
 
     const reporterName = req.user.name || passedReporter?.trim() || 'Citizen'
     const userId = req.user.id
     const userEmail = req.user.email
+
+    // Candidate complaint object
+    const candidate = {
+      description: description.trim(),
+      category,
+      landmark: landmark.trim(),
+      lat: latitude,
+      lon: longitude
+    }
+
+    // Run AI-enhanced duplicate detection against existing complaints in system
+    const existingComplaints = await getAllComplaintsRaw()
+    const duplicateMatches = []
+
+    for (const c of existingComplaints) {
+      const cmp = await compareComplaintsWithAI(candidate, c)
+      if (cmp.isMatch) {
+        duplicateMatches.push({ ...c, matchReason: cmp.reason })
+      }
+    }
+
+    const duplicateIds = duplicateMatches.map(m => m.id)
+    const history = [
+      { at: now, action: 'Complaint submitted', by: req.user ? `${reporterName} (${userEmail})` : reporterName }
+    ]
+
+    if (categorizedBy && !chosen) {
+      history.push({
+        at: now,
+        action: `Categorized into "${category}" (${department}) via ${categorizedBy}.`,
+        by: categorizedBy.includes('Gemini') ? 'Google Gemini AI' : 'CivicSense Intelligence Engine'
+      })
+    }
+
+    // If duplicate reports exist in same area, boost priority score (community escalation)
+    if (duplicateMatches.length > 0) {
+      const duplicateBoost = Math.min(30, duplicateMatches.length * 15)
+      const newScore = Math.min(100, analysis.score + duplicateBoost)
+      const escalatedPriority = newScore >= 85 ? 'Critical' : newScore >= 70 ? 'High' : newScore >= 45 ? 'Medium' : 'Low'
+
+      analysis = {
+        ...analysis,
+        score: newScore,
+        priority: escalatedPriority,
+        factors: {
+          ...analysis.factors,
+          related: duplicateBoost
+        }
+      }
+
+      const primaryMatchReason = duplicateMatches[0]?.matchReason ? ` Match: ${duplicateMatches[0].matchReason}` : ''
+      history.push({
+        at: now,
+        action: `Duplicate detection engine identified ${duplicateMatches.length} matching report(s) in this vicinity (${duplicateIds.join(', ')}). Priority escalated by +${duplicateBoost} pts to ${escalatedPriority}.${primaryMatchReason}`,
+        by: 'CivicSense Intelligence Engine'
+      })
+    }
 
     const item = {
       id: `CS-${crypto.randomUUID().slice(0, 4).toUpperCase()}${Date.now().toString().slice(-4)}`,
@@ -280,13 +422,19 @@ app.post('/api/complaints', upload.array('photos', 3), async (req, res) => {
       photos: (req.files || []).map(file => `/uploads/${file.filename}`),
       createdAt: now,
       status: 'Filed',
-      history: [{ at: now, action: 'Complaint submitted', by: req.user ? `${reporterName} (${userEmail})` : reporterName }],
+      history,
       adminNote: '',
-      duplicates: [],
+      duplicates: duplicateIds,
       ...analysis
     }
 
     const saved = await createComplaint(item)
+
+    // Bidirectionally link this new complaint into the matched existing complaints
+    if (duplicateIds.length > 0) {
+      await linkComplaintDuplicates(saved.id, duplicateIds)
+    }
+
     res.status(201).json(saved)
   } catch (error) {
     console.error('Create complaint error:', error)

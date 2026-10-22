@@ -871,21 +871,33 @@ function Admin({ user, complaints, onSelect, onSave, onDelete, notify }) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
+  const [clusterFilter, setClusterFilter] = useState('all') // 'all', 'unique', 'clusters_only'
+
+  const uniqueComplaints = useMemo(() => complaints.filter(item => !item.isDuplicate), [complaints])
+  const clusteredComplaints = useMemo(() => complaints.filter(item => item.clusterCount > 1), [complaints])
+  const duplicateCount = complaints.length - uniqueComplaints.length
 
   const filtered = useMemo(
     () =>
-      complaints.filter(
-        item =>
-          (!query ||
-            [item.id, item.description, item.landmark, item.category, item.department, item.reporter, item.userEmail]
-              .filter(Boolean)
-              .join(' ')
-              .toLowerCase()
-              .includes(query.toLowerCase())) &&
-          (!status || item.status === status) &&
-          (!priority || item.priority === priority)
-      ),
-    [complaints, query, status, priority]
+      complaints.filter(item => {
+        // Duplicate & Cluster Filter
+        if (clusterFilter === 'unique' && item.isDuplicate) return false
+        if (clusterFilter === 'clusters_only' && (!item.clusterCount || item.clusterCount <= 1)) return false
+
+        const matchesQuery =
+          !query ||
+          [item.id, item.description, item.landmark, item.category, item.department, item.reporter, item.userEmail, item.clusterId]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(query.toLowerCase())
+
+        const matchesStatus = !status || item.status === status
+        const matchesPriority = !priority || item.priority === priority
+
+        return matchesQuery && matchesStatus && matchesPriority
+      }),
+    [complaints, query, status, priority, clusterFilter]
   )
 
   const open = complaints.filter(item => item.status !== 'Closed').length
@@ -897,15 +909,15 @@ function Admin({ user, complaints, onSelect, onSave, onDelete, notify }) {
       <Hero
         eyebrow="Operations centre"
         title="Admin dashboard"
-        text="Review incoming citizen complaints, route work to municipal departments, and keep the resolution trail up to date."
+        text="Review incoming citizen complaints, triage duplicates, route work to municipal departments, and track resolution."
         badge={user ? `🛡 Logged in as ${user.name}` : undefined}
       />
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          ['Total reports', complaints.length, 'All submitted complaints in database'],
-          ['Open issues', open, 'Pending resolution'],
-          ['Critical', critical, 'Requires urgent review'],
-          ['Awaiting / resolved', resolved, 'Pending citizen confirmation or closed']
+          ['Total reports', complaints.length, 'All citizen submissions received'],
+          ['Unique issues', uniqueComplaints.length, `${duplicateCount} duplicate submissions clustered`],
+          ['Hotspot clusters', clusteredComplaints.length, 'Multi-reported civic incidents'],
+          ['Critical urgency', critical, 'Requires immediate department action']
         ].map(([label, value, note]) => (
           <div key={label} className="panel p-4">
             <p className="text-xs font-bold text-slate-500">{label}</p>
@@ -918,17 +930,62 @@ function Admin({ user, complaints, onSelect, onSave, onDelete, notify }) {
         <section className="panel">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-extrabold">Complaint queue</h2>
-              <span className="text-xs text-slate-400">Click any card to inspect full process history</span>
+              <h2 className="text-lg font-extrabold text-slate-800">Complaint queue</h2>
+              <span className="text-xs text-slate-400">Smart duplicate detection & triage engine active</span>
             </div>
-            <span className="pill bg-blue-50 text-civic">{complaints.length} total</span>
+            <div className="flex items-center gap-1.5">
+              <span className="pill bg-blue-50 text-civic">{complaints.length} reports</span>
+              {duplicateCount > 0 && (
+                <span className="pill bg-purple-50 text-purple-700 border border-purple-200">
+                  👥 {duplicateCount} duplicates clustered
+                </span>
+              )}
+            </div>
           </div>
+
+          {/* Duplicate Detection & Cluster Filter Segment */}
+          <div className="mb-3 flex flex-wrap gap-1.5 p-1 bg-slate-100 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setClusterFilter('all')}
+              className={`py-1.5 px-3 rounded-lg text-xs font-bold transition ${
+                clusterFilter === 'all'
+                  ? 'bg-white text-slate-800 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              All Reports ({complaints.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setClusterFilter('unique')}
+              className={`py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                clusterFilter === 'unique'
+                  ? 'bg-white text-civic shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span>🛡️</span> Unique Issues Only ({uniqueComplaints.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setClusterFilter('clusters_only')}
+              className={`py-1.5 px-3 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                clusterFilter === 'clusters_only'
+                  ? 'bg-purple-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span>🔥</span> Clustered Hotspots ({clusteredComplaints.length})
+            </button>
+          </div>
+
           <div className="mb-4 flex flex-wrap gap-2">
             <input
               className="field flex-1"
               value={query}
               onChange={event => setQuery(event.target.value)}
-              placeholder="Search issue / ID / reporter / area"
+              placeholder="Search issue / ID / reporter / area / cluster"
             />
             <select className="field w-auto" value={status} onChange={event => setStatus(event.target.value)}>
               <option value="">All statuses</option>
@@ -1034,7 +1091,21 @@ function ComplaintCard({ item, user, onSelect, onFeedback, onDelete }) {
           {item.status}
         </span>
         <span className="pill bg-slate-100 text-slate-600 border border-slate-200">{item.department}</span>
+        {item.clusterCount > 1 && (
+          <span className="pill bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold flex items-center gap-1">
+            <span>👥</span> {item.clusterCount} Community Reports
+          </span>
+        )}
       </div>
+
+      {item.clusterCount > 1 && (
+        <div className="mt-2.5 rounded-lg bg-indigo-50/80 px-3 py-1.5 text-xs text-indigo-900 border border-indigo-200/80 flex items-center gap-1.5">
+          <span>👥</span>
+          <span className="font-medium">
+            <b>Community Impact:</b> {item.clusterCount - 1} other neighbour(s) also reported this issue nearby. Clustered for priority dispatch.
+          </span>
+        </div>
+      )}
 
       {item.adminNote && (
         <div className="mt-2.5 rounded-lg bg-amber-50/90 p-2 text-xs text-amber-900 border border-amber-200/60">
@@ -1156,7 +1227,7 @@ function AdminCard({ item, onSelect, onSave, onDelete }) {
           )}
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className={`pill border ${priorityTone[item.priority] || 'bg-slate-100 text-slate-600 border-slate-200'}`}>
             {item.priority} priority
           </span>
@@ -1164,7 +1235,30 @@ function AdminCard({ item, onSelect, onSave, onDelete }) {
             {item.status}
           </span>
           <span className="pill bg-slate-100 text-slate-600 border border-slate-200">{item.department}</span>
+
+          {item.isClusterMaster && (
+            <span className="pill bg-purple-100 text-purple-900 border border-purple-300 font-extrabold flex items-center gap-1">
+              <span>🔥</span> Clustered Hotspot · {item.clusterCount} reports
+            </span>
+          )}
+          {item.isDuplicate && (
+            <span className="pill bg-slate-100 text-slate-700 border border-slate-300 font-medium flex items-center gap-1">
+              <span>↳</span> Duplicate Report
+            </span>
+          )}
         </div>
+
+        {item.clusterCount > 1 && (
+          <div className="mt-2.5 flex items-center justify-between rounded-lg bg-purple-50/70 px-3 py-1.5 text-xs text-purple-900 border border-purple-200/80">
+            <span className="flex items-center gap-1.5 font-medium">
+              <span>👥</span>
+              {item.isClusterMaster
+                ? `Master report for ${item.clusterCount} citizens who reported this identical issue.`
+                : `Duplicate submission clustered with ${item.duplicates?.[0] || 'master issue'}.`}
+            </span>
+            <span className="font-bold text-purple-700 underline text-[11px]">Inspect cluster →</span>
+          </div>
+        )}
         <p className="mt-2 text-xs text-slate-400">
           📍 {item.landmark || 'No landmark'} · {location(item)} · {formatDate(item.createdAt)} · <span className="text-civic font-bold">Inspect Process & History →</span>
         </p>
@@ -1242,8 +1336,73 @@ function Insights({ complaints, onSelect }) {
   ])
   const located = complaints.filter(item => item.lat != null)
 
+  // Extract distinct multi-report hotspot clusters
+  const clusters = useMemo(() => {
+    const map = new Map()
+    complaints.forEach(item => {
+      if (item.clusterCount > 1 && item.clusterId) {
+        if (!map.has(item.clusterId)) {
+          map.set(item.clusterId, {
+            clusterId: item.clusterId,
+            master: item.isClusterMaster ? item : null,
+            items: [],
+            category: item.category,
+            landmark: item.landmark,
+            count: item.clusterCount
+          })
+        }
+        const grp = map.get(item.clusterId)
+        grp.items.push(item)
+        if (item.isClusterMaster) grp.master = item
+      }
+    })
+    return Array.from(map.values())
+      .map(g => ({ ...g, master: g.master || g.items[0] }))
+      .sort((a, b) => b.count - a.count)
+  }, [complaints])
+
   return (
     <section className="panel">
+      {clusters.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-slate-800 flex items-center gap-1.5">
+              <span>🔥</span> Clustered Hotspots
+            </h2>
+            <span className="pill text-[10px] bg-purple-100 text-purple-800 border border-purple-300 font-extrabold">
+              {clusters.length} Active Hotspot{clusters.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Detected multi-reported civic emergencies in the same vicinity.
+          </p>
+          <div className="mt-3 space-y-2">
+            {clusters.map(cl => (
+              <div
+                key={cl.clusterId}
+                onClick={() => onSelect(cl.master)}
+                className="cursor-pointer rounded-xl bg-purple-50/70 p-3 text-xs transition hover:bg-purple-100 hover:border-purple-300 border border-purple-200 shadow-2xs"
+              >
+                <div className="flex justify-between items-center">
+                  <b className="text-purple-950 font-bold">
+                    {cl.master.category} {cl.master.landmark ? `· ${cl.master.landmark}` : ''}
+                  </b>
+                  <span className="pill text-[10px] bg-purple-600 text-white font-extrabold">
+                    👥 {cl.count} Reports
+                  </span>
+                </div>
+                <p className="mt-1 text-slate-600 line-clamp-1">{cl.master.description}</p>
+                <div className="mt-2 flex items-center justify-between text-[11px] text-purple-800">
+                  <span>Dept: <b>{cl.master.department}</b></span>
+                  <span className="font-bold underline text-[10px]">Inspect Master Ticket →</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <hr className="my-5 border-slate-200" />
+        </div>
+      )}
+
       <h2 className="text-lg font-extrabold text-slate-800">Location intelligence</h2>
       <p className="mt-1 text-sm text-slate-500">
         Click any located report to inspect coordinates and history.
@@ -1325,6 +1484,11 @@ function ComplaintDetailModal({ item, user, onClose, onFeedback, onSaveReview, o
               <span className={`pill border ${priorityTone[item.priority] || 'bg-slate-100 text-slate-700'}`}>
                 {item.priority} priority
               </span>
+              {item.clusterCount > 1 && (
+                <span className="pill bg-purple-100 text-purple-900 border border-purple-300 font-extrabold flex items-center gap-1">
+                  <span>👥</span> Clustered Hotspot · {item.clusterCount} Reports
+                </span>
+              )}
             </div>
             <h2 className="mt-1 text-xl font-black text-slate-800">{item.category}</h2>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -1438,6 +1602,57 @@ function ComplaintDetailModal({ item, user, onClose, onFeedback, onSaveReview, o
               )}
             </div>
           </div>
+
+          {/* Duplicate & Clustered Reports Section */}
+          {item.clusterMembers && item.clusterMembers.length > 0 && (
+            <div className="rounded-xl border border-purple-200 bg-purple-50/70 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">👥</span>
+                  <h4 className="text-xs font-black text-purple-950 uppercase tracking-wider">
+                    Duplicate & Clustered Submissions ({item.clusterMembers.length})
+                  </h4>
+                </div>
+                <span className="pill text-[10px] bg-purple-600 text-white font-extrabold shadow-2xs">
+                  {item.clusterCount} Total Citizens Reported
+                </span>
+              </div>
+              <p className="text-xs text-purple-800 mb-3">
+                CivicSense spatial and semantic intelligence identified matching citizen reports for this issue:
+              </p>
+              <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                {item.clusterMembers.map(m => (
+                  <div key={m.id} className="rounded-lg bg-white p-3 border border-purple-100 shadow-2xs text-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-800">{m.id}</span>
+                        <span className="text-slate-500 font-medium">by {m.reporter}</span>
+                        {m.distanceMeters !== null && (
+                          <span className="pill text-[10px] bg-slate-100 text-slate-700">
+                            📍 {m.distanceMeters}m away
+                          </span>
+                        )}
+                      </div>
+                      <span className={`pill text-[10px] ${statusTone[m.status] || 'bg-slate-100'}`}>{m.status}</span>
+                    </div>
+                    <p className="mt-1 text-slate-700 leading-relaxed">{m.description}</p>
+                    {m.photos && m.photos.length > 0 && (
+                      <div className="mt-2 flex gap-2">
+                        {m.photos.map((p, idx) => (
+                          <a key={idx} href={p} target="_blank" rel="noreferrer">
+                            <img src={p} alt="Duplicate photo" className="h-12 w-12 rounded-md object-cover border border-slate-200 hover:scale-105 transition" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    <p className="mt-1.5 text-[10px] text-purple-700 font-semibold">
+                      ⚡ Match Signal: {m.matchReason}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Photos */}
           {item.photos && item.photos.length > 0 && (

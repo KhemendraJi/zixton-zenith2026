@@ -177,6 +177,59 @@ export async function connectDB() {
   }
 }
 
+export async function getAllComplaintsRaw() {
+  if (isMongoConnected) {
+    try {
+      const items = await Complaint.find().sort({ createdAt: -1 }).lean()
+      return items.map(formatComplaint)
+    } catch (err) {
+      console.error('[DB] getAllComplaintsRaw mongo error:', err.message)
+    }
+  }
+  return await readJson(complaintsJsonPath, [])
+}
+
+export async function linkComplaintDuplicates(complaintId, duplicateIds = []) {
+  if (!duplicateIds || !duplicateIds.length) return
+  const now = new Date()
+
+  if (isMongoConnected) {
+    try {
+      await Complaint.updateMany(
+        { id: { $in: duplicateIds } },
+        {
+          $addToSet: { duplicates: complaintId },
+          $inc: { 'factors.related': 10 }
+        }
+      )
+    } catch (err) {
+      console.error('[DB] linkComplaintDuplicates mongo error:', err.message)
+    }
+  }
+
+  const local = await readJson(complaintsJsonPath, [])
+  let updated = false
+  for (const item of local) {
+    if (duplicateIds.includes(item.id)) {
+      if (!Array.isArray(item.duplicates)) item.duplicates = []
+      if (!item.duplicates.includes(complaintId)) {
+        item.duplicates.push(complaintId)
+        if (!item.factors) item.factors = {}
+        item.factors.related = (item.factors.related || 0) + 10
+        item.history.push({
+          at: now.toISOString(),
+          action: `System linked new duplicate report (${complaintId}) to this incident. Community urgency escalated.`,
+          by: 'CivicSense Intelligence Engine'
+        })
+        updated = true
+      }
+    }
+  }
+  if (updated) {
+    await writeJson(complaintsJsonPath, local)
+  }
+}
+
 // User operations
 export async function findUserByEmail(email) {
   const normalized = email.toLowerCase().trim()
