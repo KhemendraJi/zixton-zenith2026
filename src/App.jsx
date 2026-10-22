@@ -508,9 +508,9 @@ function Citizen({ user, complaints, onCreated, onOpenAuth }) {
   const [submitting, setSubmitting] = useState(false)
   const [locationStatus, setLocationStatus] = useState('Use GPS or enter coordinates manually.')
 
-  // Update default reporter name if user logs in
+  // Update default reporter name when user state updates
   useEffect(() => {
-    if (user?.name && !form.reporter) {
+    if (user?.name) {
       setForm(prev => ({ ...prev, reporter: user.name }))
     }
   }, [user])
@@ -536,6 +536,11 @@ function Citizen({ user, complaints, onCreated, onOpenAuth }) {
 
   const submit = async event => {
     event.preventDefault()
+    if (!user) {
+      onOpenAuth()
+      return
+    }
+
     setSubmitting(true)
     try {
       const data = new FormData()
@@ -572,146 +577,166 @@ function Citizen({ user, complaints, onCreated, onOpenAuth }) {
         eyebrow="Your voice. Better neighbourhoods."
         title="Report an issue. Track the fix."
         text="Submit a civic problem and CivicSense will suggest its category, responsible department, and priority."
-        badge="● Live prototype"
+        badge={user ? `👤 ${user.name}` : undefined}
       />
-
-      {!user && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-900">
-          <div>
-            <span className="font-bold">💡 Tip: Log in to keep track of your reports!</span>
-            <p className="text-xs text-blue-700 mt-0.5">
-              Signed-in citizens can view their personalized complaint history and live status updates.
-            </p>
-          </div>
-          <button onClick={onOpenAuth} className="btn-primary py-1.5 px-3.5 text-xs shadow-sm">
-            Sign In / Register
-          </button>
-        </div>
-      )}
 
       <div className="grid items-start gap-5 lg:grid-cols-[1.1fr_.9fr]">
         <section className="panel">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-lg font-extrabold">Report a civic issue</h2>
-            {user && (
+            <h2 className="text-lg font-extrabold text-slate-800">Report a civic issue</h2>
+            {user ? (
               <span className="text-xs text-slate-500 font-medium">
-                Reporting as <b className="text-slate-800">{user.name}</b> ({user.email})
+                Signed in as <b className="text-slate-800">{user.name}</b> ({user.email})
+              </span>
+            ) : (
+              <span className="pill bg-amber-50 text-amber-700 border border-amber-200">
+                🔒 Sign In Required
               </span>
             )}
           </div>
           <p className="mb-5 text-sm text-slate-500">
-            Your report is saved securely to the database and tracked under your profile.
+            {user
+              ? 'Your report is saved to your account and tracked by municipal authorities.'
+              : 'You must log in to submit civic issues and track their resolution.'}
           </p>
 
-          <form onSubmit={submit} className="space-y-4">
-            <Input
-              label="Your name (optional)"
-              name="reporter"
-              value={form.reporter}
-              onChange={set}
-              placeholder="e.g. Aditi Sharma"
-            />
-            <label>
-              <span className="label">Describe the problem *</span>
-              <textarea
-                required
-                minLength={8}
-                name="description"
-                value={form.description}
-                onChange={set}
-                className="field min-h-28 resize-y"
-                placeholder="e.g. A large pothole near the main gate is causing bikes to swerve…"
-              />
-              <span className="mt-1 block text-xs text-slate-500">
-                Mention the issue and nearby landmark for a stronger classification.
-              </span>
-            </label>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label>
-                <span className="label">Category (optional)</span>
-                <select name="category" value={form.category} onChange={set} className="field">
-                  <option value="">Let CivicSense detect it</option>
-                  {categories.map(item => (
-                    <option key={item}>{item}</option>
-                  ))}
-                </select>
-              </label>
-              <Input
-                label="Area / landmark"
-                name="landmark"
-                value={form.landmark}
-                onChange={set}
-                placeholder="e.g. College main gate"
-              />
+          {!user ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-civic text-xl text-white shadow-sm">
+                🔑
+              </div>
+              <h3 className="text-base font-extrabold text-slate-800">Please sign in to report a problem</h3>
+              <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-slate-500">
+                CivicSense ties reports to verified user accounts so officers can coordinate and you can track real-time resolution updates.
+              </p>
+              <button
+                type="button"
+                onClick={onOpenAuth}
+                className="btn-primary mt-4 inline-flex items-center gap-2 py-2.5 px-6 text-sm shadow-sm"
+              >
+                <span>🔑</span> Sign In / Sign Up to Report →
+              </button>
             </div>
-            <label>
-              <span className="label">Photographs (optional)</span>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={event => setPhotos(Array.from(event.target.files).slice(0, 3))}
-                className="block w-full rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-4 text-sm"
+          ) : (
+            <form onSubmit={submit} className="space-y-4">
+              <Input
+                label="Your name"
+                name="reporter"
+                value={form.reporter}
+                onChange={set}
+                placeholder="e.g. Aditi Sharma"
+                required
               />
-              <span className="mt-1 block text-xs text-slate-500">Up to 3 image files, 4 MB each.</span>
-            </label>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Input
-                  label="Latitude"
-                  type="number"
-                  name="lat"
-                  value={form.lat}
+              <label>
+                <span className="label">Describe the problem *</span>
+                <textarea
+                  required
+                  minLength={8}
+                  name="description"
+                  value={form.description}
                   onChange={set}
-                  placeholder="23.2599"
-                  step="any"
+                  className="field min-h-28 resize-y"
+                  placeholder="e.g. A large pothole near the main gate is causing bikes to swerve…"
                 />
+                <span className="mt-1 block text-xs text-slate-500">
+                  Mention the issue and nearby landmark for a stronger classification.
+                </span>
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label>
+                  <span className="label">Category (optional)</span>
+                  <select name="category" value={form.category} onChange={set} className="field">
+                    <option value="">Let CivicSense detect it</option>
+                    {categories.map(item => (
+                      <option key={item}>{item}</option>
+                    ))}
+                  </select>
+                </label>
                 <Input
-                  label="Longitude"
-                  type="number"
-                  name="lon"
-                  value={form.lon}
+                  label="Area / landmark"
+                  name="landmark"
+                  value={form.landmark}
                   onChange={set}
-                  placeholder="77.4126"
-                  step="any"
+                  placeholder="e.g. College main gate"
                 />
               </div>
-              <button type="button" onClick={detectLocation} className="btn-secondary mt-1">
-                ◎ Detect my location
+              <label>
+                <span className="label">Photographs (optional)</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={event => setPhotos(Array.from(event.target.files).slice(0, 3))}
+                  className="block w-full rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 p-4 text-sm"
+                />
+                <span className="mt-1 block text-xs text-slate-500">Up to 3 image files, 4 MB each.</span>
+              </label>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Input
+                    label="Latitude"
+                    type="number"
+                    name="lat"
+                    value={form.lat}
+                    onChange={set}
+                    placeholder="23.2599"
+                    step="any"
+                  />
+                  <Input
+                    label="Longitude"
+                    type="number"
+                    name="lon"
+                    value={form.lon}
+                    onChange={set}
+                    placeholder="77.4126"
+                    step="any"
+                  />
+                </div>
+                <button type="button" onClick={detectLocation} className="btn-secondary mt-1">
+                  ◎ Detect my location
+                </button>
+                <p className="mt-2 text-xs text-slate-500">{locationStatus}</p>
+              </div>
+              <button disabled={submitting} className="btn-primary w-full disabled:opacity-60">
+                {submitting ? 'Submitting…' : 'Analyse & submit complaint →'}
               </button>
-              <p className="mt-2 text-xs text-slate-500">{locationStatus}</p>
-            </div>
-            <button disabled={submitting} className="btn-primary w-full disabled:opacity-60">
-              {submitting ? 'Submitting…' : 'Analyse & submit complaint →'}
-            </button>
-          </form>
+            </form>
+          )}
         </section>
 
         <section className="panel">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-extrabold">
-              {user ? 'Your submitted issues' : 'Civic issues & complaints'}
-            </h2>
-            <span className="pill bg-slate-100 text-slate-600">{complaints.length} reports</span>
+            <h2 className="text-lg font-extrabold">Your submitted issues</h2>
+            <span className="pill bg-slate-100 text-slate-600">
+              {user ? `${complaints.length} reports` : 'Login required'}
+            </span>
           </div>
           <p className="mb-5 text-sm text-slate-500">
             {user
-              ? 'Issues you have submitted to the municipal council.'
-              : 'Sign in to see complaints specific to your account.'}
+              ? 'Issues you have submitted. Only visible to you and administrators.'
+              : 'Sign in to access your submitted issues and monitor their progress.'}
           </p>
-          <div className="space-y-3">
-            {complaints.length ? (
-              complaints.map(item => <ComplaintCard key={item.id} item={item} />)
-            ) : (
-              <Empty
-                text={
-                  user
-                    ? "You haven't submitted any complaints yet. Report an issue using the form."
-                    : 'Submit your first issue using the form.'
-                }
-              />
-            )}
-          </div>
+
+          {!user ? (
+            <div className="rounded-xl bg-slate-50 p-8 text-center text-sm text-slate-500 border border-slate-100">
+              <span className="text-2xl">🔒</span>
+              <p className="mt-2 font-bold text-slate-700">No issues visible while signed out</p>
+              <p className="mt-1 text-xs text-slate-500 max-w-xs mx-auto">
+                Sign in to your account to view only the problems you have submitted.
+              </p>
+              <button onClick={onOpenAuth} className="btn-secondary mt-4 py-2 px-4 text-xs font-bold">
+                Sign In to View Your Issues
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {complaints.length ? (
+                complaints.map(item => <ComplaintCard key={item.id} item={item} />)
+              ) : (
+                <Empty text="You haven't submitted any complaints yet. Report an issue using the form." />
+              )}
+            </div>
+          )}
         </section>
       </div>
     </>
