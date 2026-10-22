@@ -1,5 +1,45 @@
 [
   {
+    "id": "CS-AC2D3878",
+    "userId": "local-usr-1792663642407-jh85",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "from 2 days water is not coming in my house in gwalior",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "dal bazar gawarlior",
+    "lat": 26.19717,
+    "lon": 78.15858,
+    "photos": [
+      "/uploads/1792676767294-86ea9495-babd-4667-a69f-d393dc442cb6.jpg"
+    ],
+    "createdAt": "2026-10-22T13:46:08.999Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T13:46:08.999Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)"
+      },
+      {
+        "at": "2026-10-22T13:46:08.999Z",
+        "action": "Categorized into \"Other\" (General Civic Services) via Heuristic Rules Engine.",
+        "by": "CivicSense Intelligence Engine"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
     "id": "CS-025E4959",
     "userId": "6ad9f82a03096fd7a8fc4aef",
     "userEmail": "citizen@civicsense.org",

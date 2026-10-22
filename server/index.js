@@ -2,6 +2,7 @@ import 'dotenv/config'
 import cors from 'cors'
 import express from 'express'
 import multer from 'multer'
+import { existsSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -518,6 +519,18 @@ app.delete('/api/complaints/:id', async (req, res) => {
     res.status(500).json({ message: 'Failed to delete complaint.' })
   }
 })
+
+// Serve built production frontend
+const distDir = path.join(__dirname, '..', 'dist')
+if (existsSync(distDir)) {
+  app.use(express.static(distDir))
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      return res.sendFile(path.join(distDir, 'index.html'))
+    }
+    next()
+  })
+}
 
 // Error handling middleware
 app.use((error, _req, res, next) => {
