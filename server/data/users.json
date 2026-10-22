@@ -62,5 +62,29 @@
     "password": "$2b$10$H2RIieXR4DwaJuudax08u.4zxG8Il/p6LR0UiyELOoimR5/WnqKvy",
     "role": "user",
     "createdAt": "2026-10-22T11:08:37.102Z"
+  },
+  {
+    "id": "usr-1792667584245-t37lm",
+    "name": "saurav randi",
+    "email": "sauravrandi@gmail.com",
+    "password": "$2b$10$7I/XcsJJJRCoEF4MAXC/xOJZuDM2lx3NjwETYbsrpoi0YxhXHpNDy",
+    "role": "user",
+    "createdAt": "2026-10-22T11:13:04.245Z"
+  },
+  {
+    "id": "usr-1792668265318-3yixj",
+    "name": "Kavita Singh",
+    "email": "kavita_1792668265095@test.com",
+    "password": "$2b$10$IlINM6DL9FrqJw2UXU1NWeaCN0ZiHLDAqVCqQwLoFurzHE3nEanHq",
+    "role": "user",
+    "createdAt": "2026-10-22T11:24:25.318Z"
+  },
+  {
+    "id": "usr-1792668265461-eb00v",
+    "name": "Other Citizen",
+    "email": "other_1792668265095@test.com",
+    "password": "$2b$10$iZoYue5lcCuOzj8USXfEgO8oRgNwm3ubevi8Wwv24joAWjyJHoUPS",
+    "role": "user",
+    "createdAt": "2026-10-22T11:24:25.461Z"
   }
 ]

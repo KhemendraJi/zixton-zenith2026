@@ -305,30 +305,88 @@ export async function createComplaint(complaintData) {
   return complaintData
 }
 
-export async function updateComplaint(id, changes, by = 'Admin') {
+export async function getComplaintById(id) {
+  if (isMongoConnected) {
+    try {
+      const item = await Complaint.findOne({ id }).lean()
+      if (item) return formatComplaint(item)
+    } catch (err) {
+      console.error('[DB] getComplaintById error:', err.message)
+    }
+  }
+
+  const local = await readJson(complaintsJsonPath, [])
+  return local.find(i => i.id === id) || null
+}
+
+export async function deleteComplaint(id) {
+  let deleted = false
+
+  if (isMongoConnected) {
+    try {
+      const res = await Complaint.deleteOne({ id })
+      if (res.deletedCount > 0) deleted = true
+    } catch (err) {
+      console.error('[DB] deleteComplaint from Mongo failed:', err.message)
+    }
+  }
+
+  const local = await readJson(complaintsJsonPath, [])
+  const filtered = local.filter(i => i.id !== id)
+  if (filtered.length !== local.length) {
+    await writeJson(complaintsJsonPath, filtered)
+    deleted = true
+  }
+
+  return deleted
+}
+
+export async function updateComplaint(id, changes, by = 'Admin', user = null) {
+  const isCitizenAction = changes.action === 'accept' || changes.action === 'reject'
   const permitted = ['category', 'department', 'priority', 'status', 'adminNote']
   const filtered = Object.fromEntries(Object.entries(changes).filter(([k]) => permitted.includes(k)))
-  const now = new Date().toISOString()
+  const now = new Date()
 
   if (isMongoConnected) {
     try {
       const item = await Complaint.findOne({ id })
       if (item) {
-        for (const [key, value] of Object.entries(filtered)) {
-          if (item[key] !== value) {
+        if (isCitizenAction) {
+          const userName = user?.name ? `${user.name} (Citizen)` : 'Citizen'
+          if (changes.action === 'accept') {
+            item.status = 'Closed'
             item.history.push({
-              at: new Date(),
-              action: `${key} changed: ${item[key]} → ${value}`,
-              by
+              at: now,
+              action: 'Resolution accepted by Citizen: Citizen confirmed the fix is complete.',
+              by: userName
             })
-            item[key] = value
+          } else if (changes.action === 'reject') {
+            item.status = 'Reopened'
+            const reason = changes.reason && changes.reason.trim() ? `: ${changes.reason.trim()}` : ''
+            item.history.push({
+              at: now,
+              action: `Resolution rejected by Citizen${reason}. Issue reopened for department action.`,
+              by: userName
+            })
           }
+        } else {
+          for (const [key, value] of Object.entries(filtered)) {
+            if (item[key] !== value) {
+              item.history.push({
+                at: now,
+                action: `${key} changed: ${item[key]} → ${value}`,
+                by
+              })
+              item[key] = value
+            }
+          }
+          item.history.push({
+            at: now,
+            action: 'Administrator review saved',
+            by
+          })
         }
-        item.history.push({
-          at: new Date(),
-          action: 'Administrator review saved',
-          by
-        })
+
         await item.save()
         const formatted = formatComplaint(item.toObject())
 
@@ -350,21 +408,42 @@ export async function updateComplaint(id, changes, by = 'Admin') {
   const item = local.find(i => i.id === id)
   if (!item) return null
 
-  for (const [key, value] of Object.entries(filtered)) {
-    if (item[key] !== value) {
+  if (isCitizenAction) {
+    const userName = user?.name ? `${user.name} (Citizen)` : 'Citizen'
+    if (changes.action === 'accept') {
+      item.status = 'Closed'
       item.history.push({
-        at: now,
-        action: `${key} changed: ${item[key]} → ${value}`,
-        by
+        at: now.toISOString(),
+        action: 'Resolution accepted by Citizen: Citizen confirmed the fix is complete.',
+        by: userName
       })
-      item[key] = value
+    } else if (changes.action === 'reject') {
+      item.status = 'Reopened'
+      const reason = changes.reason && changes.reason.trim() ? `: ${changes.reason.trim()}` : ''
+      item.history.push({
+        at: now.toISOString(),
+        action: `Resolution rejected by Citizen${reason}. Issue reopened for department action.`,
+        by: userName
+      })
     }
+  } else {
+    for (const [key, value] of Object.entries(filtered)) {
+      if (item[key] !== value) {
+        item.history.push({
+          at: now.toISOString(),
+          action: `${key} changed: ${item[key]} → ${value}`,
+          by
+        })
+        item[key] = value
+      }
+    }
+    item.history.push({
+      at: now.toISOString(),
+      action: 'Administrator review saved',
+      by
+    })
   }
-  item.history.push({
-    at: now,
-    action: 'Administrator review saved',
-    by
-  })
+
   await writeJson(complaintsJsonPath, local)
   return item
 }

@@ -13,8 +13,10 @@ import {
   findUserById,
   createUser,
   getComplaints,
+  getComplaintById,
   createComplaint,
-  updateComplaint
+  updateComplaint,
+  deleteComplaint
 } from './db.js'
 import {
   hashPassword,
@@ -292,11 +294,38 @@ app.post('/api/complaints', upload.array('photos', 3), async (req, res) => {
   }
 })
 
-// PATCH complaint (update status/priority/department/category/adminNote)
+// PATCH complaint:
+// - Admin can update category, department, priority, status, and adminNote.
+// - Citizen can accept or reject resolution for their own complaint.
 app.patch('/api/complaints/:id', async (req, res) => {
   try {
-    const reviewerName = req.user?.name ? `${req.user.name} (Admin)` : 'Admin'
-    const updated = await updateComplaint(req.params.id, req.body, reviewerName)
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required.' })
+    }
+
+    const existing = await getComplaintById(req.params.id)
+    if (!existing) {
+      return res.status(404).json({ message: 'Complaint not found.' })
+    }
+
+    const isAdmin = req.user.role === 'admin'
+    const isOwner =
+      existing.userId === req.user.id ||
+      (existing.userEmail && existing.userEmail.toLowerCase() === req.user.email.toLowerCase())
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ message: 'You are not authorized to modify this complaint.' })
+    }
+
+    // Citizen can only accept or reject resolution
+    if (!isAdmin && isOwner) {
+      if (req.body.action !== 'accept' && req.body.action !== 'reject') {
+        return res.status(400).json({ message: 'Citizens can only accept or reject resolutions.' })
+      }
+    }
+
+    const reviewerName = isAdmin ? (req.user.name ? `${req.user.name} (Admin)` : 'Admin') : (req.user.name || 'Citizen')
+    const updated = await updateComplaint(req.params.id, req.body, reviewerName, req.user)
     if (!updated) {
       return res.status(404).json({ message: 'Complaint not found.' })
     }
@@ -304,6 +333,41 @@ app.patch('/api/complaints/:id', async (req, res) => {
   } catch (error) {
     console.error('Update complaint error:', error)
     res.status(500).json({ message: 'Failed to update complaint.' })
+  }
+})
+
+// DELETE complaint:
+// - Admin can delete any complaint (e.g., spam, duplicates).
+// - Citizen can delete their own submitted complaint.
+app.delete('/api/complaints/:id', async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required.' })
+    }
+
+    const existing = await getComplaintById(req.params.id)
+    if (!existing) {
+      return res.status(404).json({ message: 'Complaint not found.' })
+    }
+
+    const isAdmin = req.user.role === 'admin'
+    const isOwner =
+      existing.userId === req.user.id ||
+      (existing.userEmail && existing.userEmail.toLowerCase() === req.user.email.toLowerCase())
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ message: 'You are not authorized to delete this complaint.' })
+    }
+
+    const success = await deleteComplaint(req.params.id)
+    if (!success) {
+      return res.status(500).json({ message: 'Could not delete complaint.' })
+    }
+
+    res.json({ message: `Complaint ${req.params.id} has been deleted.`, id: req.params.id })
+  } catch (error) {
+    console.error('Delete complaint error:', error)
+    res.status(500).json({ message: 'Failed to delete complaint.' })
   }
 })
 
