@@ -5,6 +5,19 @@ const categories = ['Roads & Potholes', 'Sanitation & Garbage', 'Water Supply', 
 const departments = ['Roads & Maintenance', 'Sanitation Department', 'Water Supply Department', 'Electrical Department', 'Drainage Department', 'Public Safety / Ward Office', 'General Civic Services']
 const statusOptions = ['Filed', 'Assigned', 'In Progress', 'Resolved - Awaiting Citizen', 'Reopened', 'Closed']
 
+async function readApiResponse(response) {
+  const text = await response.text()
+  let body
+  try {
+    body = text ? JSON.parse(text) : null
+  } catch {
+    throw new Error(`The API returned an invalid response (HTTP ${response.status}). Check that the backend is running.`)
+  }
+  if (!response.ok) throw new Error(body?.message || `The request failed (HTTP ${response.status}).`)
+  if (body === null) throw new Error('The API returned an empty response. Check that the backend is running.')
+  return body
+}
+
 const priorityTone = { Critical: 'bg-red-100 text-red-700', High: 'bg-orange-100 text-orange-700', Medium: 'bg-amber-100 text-amber-700', Low: 'bg-emerald-100 text-emerald-700' }
 const formatDate = value => new Date(value).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 const location = item => item.lat == null ? 'Location not provided' : `${Number(item.lat).toFixed(5)}, ${Number(item.lon).toFixed(5)}`
@@ -15,7 +28,7 @@ function App() {
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const refresh = async () => { try { const response = await fetch(API); setComplaints(await response.json()) } catch { setNotice('Could not reach the API. Start the backend with npm run dev.') } finally { setLoading(false) } }
+  const refresh = async () => { try { const response = await fetch(API); const items = await readApiResponse(response); if (!Array.isArray(items)) throw new Error('The API returned an unexpected complaints response.'); setComplaints(items) } catch (error) { setNotice(error.message || 'Could not reach the API. Start the backend with npm run dev.') } finally { setLoading(false) } }
   useEffect(() => { refresh() }, [])
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 4000); return () => clearTimeout(timer) }, [notice])
 
@@ -39,11 +52,11 @@ function Citizen({ complaints, onCreated }) {
   const [locationStatus, setLocationStatus] = useState('Use GPS or enter coordinates manually.')
   const set = event => setForm(current => ({ ...current, [event.target.name]: event.target.value }))
   const detectLocation = () => { if (!navigator.geolocation) return setLocationStatus('Geolocation is not supported by this browser.'); setLocationStatus('Requesting location permission…'); navigator.geolocation.getCurrentPosition(pos => { setForm(current => ({ ...current, lat: pos.coords.latitude.toFixed(6), lon: pos.coords.longitude.toFixed(6) })); setLocationStatus(`Location captured (±${Math.round(pos.coords.accuracy)} m).`) }, () => setLocationStatus('Could not detect location. Try HTTPS/localhost or enter coordinates manually.'), { enableHighAccuracy: true, timeout: 10000 }) }
-  const submit = async event => { event.preventDefault(); setSubmitting(true); try { const data = new FormData(); Object.entries(form).forEach(([key, value]) => data.append(key, value)); photos.forEach(photo => data.append('photos', photo)); const response = await fetch(API, { method: 'POST', body: data }); const body = await response.json(); if (!response.ok) throw new Error(body.message); onCreated(body); setForm({ reporter: '', description: '', category: '', landmark: '', lat: '', lon: '' }); setPhotos([]); setLocationStatus('Use GPS or enter coordinates manually.') } catch (error) { alert(error.message || 'Unable to submit complaint.') } finally { setSubmitting(false) } }
+  const submit = async event => { event.preventDefault(); setSubmitting(true); try { const data = new FormData(); Object.entries(form).forEach(([key, value]) => data.append(key, value)); photos.forEach(photo => data.append('photos', photo)); const response = await fetch(API, { method: 'POST', body: data }); const body = await readApiResponse(response); onCreated(body); setForm({ reporter: '', description: '', category: '', landmark: '', lat: '', lon: '' }); setPhotos([]); setLocationStatus('Use GPS or enter coordinates manually.') } catch (error) { alert(error.message || 'Unable to submit complaint.') } finally { setSubmitting(false) } }
   return <>
     <Hero eyebrow="Your voice. Better neighbourhoods." title="Report an issue. Track the fix." text="Submit a civic problem and CivicSense will suggest its category, responsible department, and priority." badge="● Live prototype" />
     <div className="grid items-start gap-5 lg:grid-cols-[1.1fr_.9fr]">
-      <section className="panel"><h2 className="text-lg font-extrabold">Report a civic issue</h2><p className="mb-5 text-sm text-slate-500">Your report is stored securely in the shared hackathon demo database.</p>
+      <section className="panel"><h2 className="text-lg font-extrabold">Report a civic issue</h2><p className="mb-5 text-sm text-slate-500">Your report is saved to this local demo's complaint store.</p>
         <form onSubmit={submit} className="space-y-4">
           <Input label="Your name (optional)" name="reporter" value={form.reporter} onChange={set} placeholder="e.g. Aditi Sharma" />
           <label><span className="label">Describe the problem *</span><textarea required minLength="8" name="description" value={form.description} onChange={set} className="field min-h-28 resize-y" placeholder="e.g. A large pothole near the main gate is causing bikes to swerve…" /><span className="mt-1 block text-xs text-slate-500">Mention the issue and nearby landmark for a stronger classification.</span></label>
@@ -61,7 +74,7 @@ function Citizen({ complaints, onCreated }) {
 function Admin({ complaints, setComplaints, notify }) {
   const [query, setQuery] = useState(''); const [status, setStatus] = useState(''); const [priority, setPriority] = useState('')
   const filtered = useMemo(() => complaints.filter(item => (!query || [item.id, item.description, item.landmark, item.category, item.department].join(' ').toLowerCase().includes(query.toLowerCase())) && (!status || item.status === status) && (!priority || item.priority === priority)), [complaints, query, status, priority])
-  const patch = async (id, changes) => { const response = await fetch(`${API}/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(changes) }); const item = await response.json(); if (!response.ok) return notify(item.message || 'Update failed.'); setComplaints(current => current.map(old => old.id === id ? item : old)); notify(`Review saved for ${id}.`) }
+  const patch = async (id, changes) => { try { const response = await fetch(`${API}/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(changes) }); const item = await readApiResponse(response); setComplaints(current => current.map(old => old.id === id ? item : old)); notify(`Review saved for ${id}.`) } catch (error) { notify(error.message || 'Update failed.') } }
   const open = complaints.filter(item => item.status !== 'Closed').length; const critical = complaints.filter(item => item.priority === 'Critical' && item.status !== 'Closed').length; const resolved = complaints.filter(item => ['Closed', 'Resolved - Awaiting Citizen'].includes(item.status)).length
   return <><Hero eyebrow="Operations centre" title="Admin dashboard" text="Review incoming complaints, route work to departments, and keep the resolution trail up to date." /><div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[['Total reports', complaints.length, 'All submitted complaints'], ['Open issues', open, 'Not closed'], ['Critical', critical, 'Requires urgent review'], ['Awaiting / resolved', resolved, 'Pending citizen confirmation may remain']].map(([label, value, note]) => <div key={label} className="panel p-4"><p className="text-xs font-bold text-slate-500">{label}</p><p className="my-1 text-3xl font-black">{value}</p><p className="text-xs text-slate-500">{note}</p></div>)}</div>
     <div className="grid items-start gap-5 lg:grid-cols-[1.1fr_.9fr]"><section className="panel"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-extrabold">Complaint queue</h2><span className="pill bg-blue-50 text-civic">{complaints.length} total</span></div><div className="mb-4 flex flex-wrap gap-2"><input className="field flex-1" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search issue / ID / area" /><select className="field w-auto" value={status} onChange={event => setStatus(event.target.value)}><option value="">All statuses</option>{statusOptions.map(item => <option key={item}>{item}</option>)}</select><select className="field w-auto" value={priority} onChange={event => setPriority(event.target.value)}><option value="">All priorities</option>{Object.keys(priorityTone).map(item => <option key={item}>{item}</option>)}</select></div><div className="space-y-3">{filtered.length ? filtered.map(item => <AdminCard key={item.id} item={item} onSave={patch} />) : <Empty text="No complaints match these filters." />}</div></section><Insights complaints={complaints} /></div></>

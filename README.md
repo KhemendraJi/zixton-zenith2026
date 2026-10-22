@@ -20,6 +20,8 @@ npm run dev
 
 Open the Vite URL shown in the terminal (normally `http://localhost:5173`). The API runs on `http://localhost:5000`; Vite forwards `/api` and `/uploads` requests automatically.
 
+Run `npm run dev` from the project root and keep that terminal open while using the app. It starts both the frontend and API. The API creates `server/data/` and `server/uploads/` automatically; complaint data and uploaded photos are local to each clone and are not shared through GitHub.
+
 ## Useful commands
 
 ```bash
