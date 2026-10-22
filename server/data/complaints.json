@@ -1,5 +1,479 @@
 [
   {
+    "id": "CS-025E4959",
+    "userId": "6ad9f82a03096fd7a8fc4aef",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "water is not coming in hostel 10c",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "dal bazar, gwalior",
+    "lat": 26.197172,
+    "lon": 78.158578,
+    "photos": [],
+    "createdAt": "2026-10-22T13:27:47.614Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T13:27:47.614Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)",
+        "_id": "6ada0f5ac9e500fc1c86e9ed"
+      },
+      {
+        "at": "2026-10-22T13:27:47.614Z",
+        "action": "Categorized into \"Other\" (General Civic Services) via Heuristic Rules Engine.",
+        "by": "CivicSense Intelligence Engine",
+        "_id": "6ada0f5ac9e500fc1c86e9ee"
+      },
+      {
+        "at": "2026-10-22T13:27:47.614Z",
+        "action": "Duplicate detection engine identified 2 matching report(s) in this vicinity (CS-C6AE6909, CS-477C6525). Priority escalated by +30 pts to Medium. Match: GPS proximity (0m) with matching issue: Other",
+        "by": "CivicSense Intelligence Engine",
+        "_id": "6ada0f5ac9e500fc1c86e9ef"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [
+      "CS-C6AE6909",
+      "CS-477C6525"
+    ],
+    "score": 65,
+    "priority": "Medium",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 30
+    },
+    "_id": "6ada0f5ac9e500fc1c86e9ec",
+    "__v": 0
+  },
+  {
+    "id": "CS-C6AE6909",
+    "userId": "6ad9f82a03096fd7a8fc4aef",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "there is no water supply in hostel 10c",
+    "category": "Water Supply",
+    "department": "Water Supply Department",
+    "landmark": "dal bazar, gwalior",
+    "lat": 26.197172,
+    "lon": 78.158578,
+    "photos": [],
+    "createdAt": "2026-10-22T13:26:50.838Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T13:26:50.838Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)",
+        "_id": "6ada0f2ac9e500fc1c86e9e9"
+      },
+      {
+        "at": "2026-10-22T13:26:50.838Z",
+        "action": "Categorized into \"Water Supply\" (Water Supply Department) via Google Gemini (gemini-3.5-flash).",
+        "by": "Google Gemini AI",
+        "_id": "6ada0f2ac9e500fc1c86e9ea"
+      },
+      {
+        "at": "2026-10-22T13:26:50.838Z",
+        "action": "Duplicate detection engine identified 2 matching report(s) in this vicinity (CS-477C6525, CS-87726490). Priority escalated by +30 pts to Medium. Match: Both reports describe the exact same water supply issue at Hostel 10C in Dal Bazar, Gwalior, with identical locations. (Verified by gemini-3.5-flash)",
+        "by": "CivicSense Intelligence Engine",
+        "_id": "6ada0f2ac9e500fc1c86e9eb"
+      },
+      {
+        "at": "2026-10-22T13:27:55.038Z",
+        "action": "System linked new duplicate report (CS-025E4959) to this incident. Community urgency escalated.",
+        "by": "CivicSense Intelligence Engine"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [
+      "CS-477C6525",
+      "CS-87726490",
+      "CS-025E4959"
+    ],
+    "score": 65,
+    "priority": "Medium",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 40
+    },
+    "_id": "6ada0f2ac9e500fc1c86e9e8",
+    "__v": 0
+  },
+  {
+    "id": "CS-477C6525",
+    "userId": "6ad9f82a03096fd7a8fc4aee",
+    "userEmail": "admin@civicsense.org",
+    "reporter": "System Administrator",
+    "description": "in hostel 10c water is not coming",
+    "category": "Water Supply",
+    "department": "Water Supply Department",
+    "landmark": "dal bazar, gwalior",
+    "lat": 26.197172,
+    "lon": 78.158578,
+    "photos": [],
+    "createdAt": "2026-10-22T13:24:45.920Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T13:24:45.920Z",
+        "action": "Complaint submitted",
+        "by": "System Administrator (admin@civicsense.org)",
+        "_id": "6ada0ea8c9e500fc1c86e9e5"
+      },
+      {
+        "at": "2026-10-22T13:24:45.920Z",
+        "action": "Categorized into \"Water Supply\" (Water Supply Department) via Google Gemini (gemini-3.5-flash).",
+        "by": "Google Gemini AI",
+        "_id": "6ada0ea8c9e500fc1c86e9e6"
+      },
+      {
+        "at": "2026-10-22T13:24:45.920Z",
+        "action": "Duplicate detection engine identified 1 matching report(s) in this vicinity (CS-87726490). Priority escalated by +15 pts to Medium. Match: GPS proximity (0m) with matching issue: Water Supply",
+        "by": "CivicSense Intelligence Engine",
+        "_id": "6ada0ea8c9e500fc1c86e9e7"
+      },
+      {
+        "at": "2026-10-22T13:27:06.987Z",
+        "action": "System linked new duplicate report (CS-C6AE6909) to this incident. Community urgency escalated.",
+        "by": "CivicSense Intelligence Engine"
+      },
+      {
+        "at": "2026-10-22T13:27:55.038Z",
+        "action": "System linked new duplicate report (CS-025E4959) to this incident. Community urgency escalated.",
+        "by": "CivicSense Intelligence Engine"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [
+      "CS-87726490",
+      "CS-C6AE6909",
+      "CS-025E4959"
+    ],
+    "score": 50,
+    "priority": "Medium",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 35
+    },
+    "_id": "6ada0ea8c9e500fc1c86e9e4",
+    "__v": 0
+  },
+  {
+    "id": "CS-59757389",
+    "userId": "6ad9f82a03096fd7a8fc4aef",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "Severe pipeline rupture under the overbridge, water gushing onto the road",
+    "category": "Roads & Potholes",
+    "department": "Roads & Maintenance",
+    "landmark": "Subhash Nagar Overbridge pillar 4",
+    "lat": 23.23554,
+    "lon": 77.44222,
+    "photos": [],
+    "createdAt": "2026-10-22T13:20:33.794Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T13:20:33.794Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)",
+        "_id": "6ada0da53676fe25114f539a"
+      },
+      {
+        "at": "2026-10-22T13:20:33.794Z",
+        "action": "Categorized into \"Roads & Potholes\" (Roads & Maintenance) via Heuristic Rules Engine.",
+        "by": "CivicSense Intelligence Engine",
+        "_id": "6ada0da53676fe25114f539b"
+      },
+      {
+        "at": "2026-10-22T13:20:33.794Z",
+        "action": "Duplicate detection engine identified 1 matching report(s) in this vicinity (CS-4C5F7359). Priority escalated by +15 pts to Medium. Match: Both reports describe a major water pipeline rupture causing flooding on the street at Subhash Nagar Overbridge, located only 5 meters apart. (Verified by gemini-3.5-flash)",
+        "by": "CivicSense Intelligence Engine",
+        "_id": "6ada0da53676fe25114f539c"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [
+      "CS-4C5F7359"
+    ],
+    "score": 58,
+    "priority": "Medium",
+    "factors": {
+      "safety": 35,
+      "severity": 85,
+      "impact": 50,
+      "waiting": 10,
+      "related": 15
+    },
+    "_id": "6ada0da53676fe25114f5399",
+    "__v": 0
+  },
+  {
+    "id": "CS-4C5F7359",
+    "userId": "6ad9f82a03096fd7a8fc4aef",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "The main water pipeline cracked open and gallons of clean drinking water are flooding the street",
+    "category": "Water Supply",
+    "department": "Water Supply Department",
+    "landmark": "Subhash Nagar Overbridge",
+    "lat": 23.2355,
+    "lon": 77.4422,
+    "photos": [],
+    "createdAt": "2026-10-22T13:20:17.291Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T13:20:17.291Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)",
+        "_id": "6ada0d913676fe25114f5397"
+      },
+      {
+        "at": "2026-10-22T13:20:17.291Z",
+        "action": "Categorized into \"Water Supply\" (Water Supply Department) via Google Gemini (gemini-3.5-flash).",
+        "by": "Google Gemini AI",
+        "_id": "6ada0d913676fe25114f5398"
+      },
+      {
+        "at": "2026-10-22T13:20:37.469Z",
+        "action": "System linked new duplicate report (CS-59757389) to this incident. Community urgency escalated.",
+        "by": "CivicSense Intelligence Engine"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [
+      "CS-59757389"
+    ],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 10
+    },
+    "_id": "6ada0d913676fe25114f5396",
+    "__v": 0
+  },
+  {
+    "id": "CS-5F8D2293",
+    "userId": "local-usr-1792663642407-jh85",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "water is not coming in my house",
+    "category": "Water Supply",
+    "department": "Water Supply Department",
+    "landmark": "dal bazar, gwalior",
+    "lat": 23.230345,
+    "lon": 77.490143,
+    "photos": [],
+    "createdAt": "2026-10-22T12:57:42.221Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T12:57:42.221Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-87726490",
+    "userId": "local-usr-1792663642407-jh85",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "there is no water supply in my house",
+    "category": "Water Supply",
+    "department": "Water Supply Department",
+    "landmark": "dal bazar, gwalior",
+    "lat": 26.197172,
+    "lon": 78.158578,
+    "photos": [],
+    "createdAt": "2026-10-22T12:56:46.457Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T12:56:46.457Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)"
+      },
+      {
+        "at": "2026-10-22T13:24:56.654Z",
+        "action": "System linked new duplicate report (CS-477C6525) to this incident. Community urgency escalated.",
+        "by": "CivicSense Intelligence Engine"
+      },
+      {
+        "at": "2026-10-22T13:27:06.987Z",
+        "action": "System linked new duplicate report (CS-C6AE6909) to this incident. Community urgency escalated.",
+        "by": "CivicSense Intelligence Engine"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [
+      "CS-477C6525",
+      "CS-C6AE6909"
+    ],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 20
+    }
+  },
+  {
+    "id": "CS-B8A71082",
+    "userId": "local-usr-1792663642407-jh85",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "water is not coming in my house",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "dal bazar, gwalior",
+    "lat": 26.197172,
+    "lon": 78.158578,
+    "photos": [],
+    "createdAt": "2026-10-22T12:56:11.050Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T12:56:11.050Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-AD638918",
+    "userId": "6ad9f82a03096fd7a8fc4aef",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "Huge flames and fire spreading near house",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "dal bazar gawalior",
+    "lat": 23.2097,
+    "lon": 77.4111,
+    "photos": [],
+    "createdAt": "2026-10-22T12:29:38.874Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T12:29:38.874Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)",
+        "_id": "6ada01b2cf500bb6a7a41250"
+      },
+      {
+        "at": "2026-10-22T12:29:38.874Z",
+        "action": "Duplicate detection engine identified 2 matching report(s) in this vicinity (CS-C1381315, CS-A4ED7132). Priority escalated by +30 pts to High.",
+        "by": "CivicSense Intelligence Engine",
+        "_id": "6ada01b2cf500bb6a7a41251"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [
+      "CS-C1381315",
+      "CS-A4ED7132"
+    ],
+    "score": 82,
+    "priority": "High",
+    "factors": {
+      "safety": 90,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 30
+    },
+    "_id": "6ada01b2cf500bb6a7a4124f",
+    "__v": 0
+  },
+  {
+    "id": "CS-69850173",
+    "userId": "local-usr-1792663642407-jh85",
+    "userEmail": "citizen@civicsense.org",
+    "reporter": "Demo Citizen",
+    "description": "electricity is cut off from house",
+    "category": "Streetlights & Electricity",
+    "department": "Electrical Department",
+    "landmark": "dal bazar, gwalior",
+    "lat": 23.230345,
+    "lon": 77.490143,
+    "photos": [],
+    "createdAt": "2026-10-22T11:52:50.160Z",
+    "status": "Closed",
+    "history": [
+      {
+        "at": "2026-10-22T11:52:50.160Z",
+        "action": "Complaint submitted",
+        "by": "Demo Citizen (citizen@civicsense.org)"
+      },
+      {
+        "at": "2026-10-22T11:53:34.705Z",
+        "action": "status changed: Filed → Resolved - Awaiting Citizen",
+        "by": "System Administrator (Admin)"
+      },
+      {
+        "at": "2026-10-22T11:53:34.705Z",
+        "action": "Administrator review saved",
+        "by": "System Administrator (Admin)"
+      },
+      {
+        "at": "2026-10-22T11:54:08.274Z",
+        "action": "Resolution accepted by Citizen: Citizen confirmed the fix is complete.",
+        "by": "Demo Citizen (Citizen)"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
     "id": "CS-C1381315",
     "userId": "usr-1792667584245-t37lm",
     "userEmail": "sauravrandi@gmail.com",
@@ -18,10 +492,17 @@
         "at": "2026-10-22T11:13:31.315Z",
         "action": "Complaint submitted",
         "by": "saurav randi (sauravrandi@gmail.com)"
+      },
+      {
+        "at": "2026-10-22T12:29:39.003Z",
+        "action": "System linked new duplicate report (CS-AD638918) to this incident. Community urgency escalated.",
+        "by": "CivicSense Intelligence Engine"
       }
     ],
     "adminNote": "",
-    "duplicates": [],
+    "duplicates": [
+      "CS-AD638918"
+    ],
     "score": 52,
     "priority": "Medium",
     "factors": {
@@ -29,7 +510,7 @@
       "severity": 55,
       "impact": 50,
       "waiting": 10,
-      "related": 0
+      "related": 10
     }
   },
   {
@@ -117,10 +598,17 @@
         "at": "2026-10-22T10:21:37.132Z",
         "action": "Complaint submitted",
         "by": "saurav (sauravrandwa@gmail.com)"
+      },
+      {
+        "at": "2026-10-22T12:29:39.003Z",
+        "action": "System linked new duplicate report (CS-AD638918) to this incident. Community urgency escalated.",
+        "by": "CivicSense Intelligence Engine"
       }
     ],
     "adminNote": "",
-    "duplicates": [],
+    "duplicates": [
+      "CS-AD638918"
+    ],
     "score": 52,
     "priority": "Medium",
     "factors": {
@@ -128,7 +616,7 @@
       "severity": 55,
       "impact": 50,
       "waiting": 10,
-      "related": 0
+      "related": 10
     }
   },
   {
