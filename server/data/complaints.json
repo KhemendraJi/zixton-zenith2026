@@ -1,0 +1,136 @@
+[
+  {
+    "id": "CS-0FE14980",
+    "reporter": "saurav",
+    "description": "light is not coming",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "hostel 10",
+    "lat": 23.21731,
+    "lon": 77.40591,
+    "photos": [],
+    "createdAt": "2026-10-22T07:34:14.980Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T07:34:14.980Z",
+        "action": "Complaint submitted",
+        "by": "Citizen"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-63407484",
+    "reporter": "manya mehta",
+    "description": "there is someone harrashing me",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "hostel 8 manit",
+    "lat": 23.20961,
+    "lon": 77.411571,
+    "photos": [],
+    "createdAt": "2026-10-22T07:23:17.484Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T07:23:17.484Z",
+        "action": "Complaint submitted",
+        "by": "Citizen"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-BDA66999",
+    "reporter": "manya mehta",
+    "description": "there is a fire inside hostel 7 mNIT",
+    "category": "Other",
+    "department": "General Civic Services",
+    "landmark": "hostel 7 manit",
+    "lat": 23.209889,
+    "lon": 77.41192,
+    "photos": [],
+    "createdAt": "2026-10-22T07:17:46.999Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T07:17:46.999Z",
+        "action": "Complaint submitted",
+        "by": "Citizen"
+      },
+      {
+        "at": "2026-10-22T07:18:28.150Z",
+        "action": "priority changed: Medium → High",
+        "by": "Admin"
+      },
+      {
+        "at": "2026-10-22T07:18:28.150Z",
+        "action": "Administrator review saved",
+        "by": "Admin"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 52,
+    "priority": "High",
+    "factors": {
+      "safety": 90,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-B5002608",
+    "reporter": "khembhai",
+    "description": "saurav pothole me gir gaya",
+    "category": "Roads & Potholes",
+    "department": "Roads & Maintenance",
+    "landmark": "hostel 7 manit",
+    "lat": 21.14946,
+    "lon": 72.876518,
+    "photos": [],
+    "createdAt": "2026-10-22T07:13:52.607Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T07:13:52.607Z",
+        "action": "Complaint submitted",
+        "by": "Citizen"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  }
+]
