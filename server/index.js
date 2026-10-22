@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage, limits: { fileSize: 4 * 1024 * 1024, files: 3 }, fileFilter: (_, f, done) => done(null, f.mimetype.startsWith('image/')) })
 
-async function load() { try { return JSON.parse(await readFile(dbPath, 'utf8')) } catch { return [] } }
+async function load() { try { return JSON.parse(await readFile(dbPath, 'utf8')) } catch (error) { if (error.code === 'ENOENT') return []; throw error } }
 async function save(items) { await writeFile(dbPath, JSON.stringify(items, null, 2)) }
 const categories = ['Roads & Potholes', 'Sanitation & Garbage', 'Water Supply', 'Streetlights & Electricity', 'Drainage & Sewage', 'Public Safety', 'Other']
 const departments = { 'Roads & Potholes': 'Roads & Maintenance', 'Sanitation & Garbage': 'Sanitation Department', 'Water Supply': 'Water Supply Department', 'Streetlights & Electricity': 'Electrical Department', 'Drainage & Sewage': 'Drainage Department', 'Public Safety': 'Public Safety / Ward Office', Other: 'General Civic Services' }
@@ -42,4 +42,15 @@ app.post('/api/complaints', upload.array('photos', 3), async (req, res) => {
   const items = await load(); items.unshift(item); await save(items); res.status(201).json(item)
 })
 app.patch('/api/complaints/:id', async (req, res) => { const items = await load(); const item = items.find(i => i.id === req.params.id); if (!item) return res.status(404).json({ message: 'Complaint not found.' }); const permitted = ['category', 'department', 'priority', 'status', 'adminNote']; const changes = Object.fromEntries(Object.entries(req.body).filter(([k]) => permitted.includes(k))); const now = new Date().toISOString(); for (const [key, value] of Object.entries(changes)) if (item[key] !== value) { item.history.push({ at: now, action: `${key} changed: ${item[key]} → ${value}`, by: 'Admin' }); item[key] = value }; item.history.push({ at: now, action: 'Administrator review saved', by: 'Admin' }); await save(items); res.json(item) })
+app.use((error, _req, res, next) => {
+  if (res.headersSent) return next(error)
+  console.error('API request failed:', error)
+  const isUploadError = error instanceof multer.MulterError
+  const status = isUploadError ? error.code === 'LIMIT_FILE_SIZE' ? 413 : 400 : 500
+  res.status(status).json({
+    message: isUploadError
+      ? error.code === 'LIMIT_FILE_SIZE' ? 'Each photo must be 4 MB or smaller.' : 'The uploaded photos could not be processed.'
+      : 'The server could not process the request.'
+  })
+})
 app.listen(process.env.PORT || 5000, () => console.log('CivicSense API listening on http://localhost:5000'))
