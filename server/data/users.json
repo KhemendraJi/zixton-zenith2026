@@ -1,0 +1,50 @@
+[
+  {
+    "id": "local-usr-1792663642292-7ve3",
+    "name": "System Administrator",
+    "email": "admin@civicsense.org",
+    "password": "$2b$10$qZJnQAXj5nlCvdFOeSER2e2ukjp33JqRCSF8uQd5IXO0GTlmaZONy",
+    "role": "admin",
+    "createdAt": "2026-10-22T10:07:22.292Z"
+  },
+  {
+    "id": "local-usr-1792663642407-jh85",
+    "name": "Demo Citizen",
+    "email": "citizen@civicsense.org",
+    "password": "$2b$10$ukWJUQk8MaP6FPXdorx5feV.8MZvGsLdqlEHjlUytkNl2GJiHKCYi",
+    "role": "user",
+    "createdAt": "2026-10-22T10:07:22.407Z"
+  },
+  {
+    "id": "usr-1792663687052-omde1",
+    "name": "Rohit User",
+    "email": "rohit@test.com",
+    "password": "$2b$10$LmbkT4whZ0g5jI5Wre24jewgaIwXSIacBnQ2xcMUz5pmaXw/vWMN2",
+    "role": "user",
+    "createdAt": "2026-10-22T10:08:07.052Z"
+  },
+  {
+    "id": "usr-1792663890476-4nfqi",
+    "name": "Aarav Patel",
+    "email": "aarav@test.com",
+    "password": "$2b$10$VZ369B9ZIAGCJp83lt.pHOO8bD5ZUOdsf25NdhE9HkN3wTOUVb9z6",
+    "role": "user",
+    "createdAt": "2026-10-22T10:11:30.476Z"
+  },
+  {
+    "id": "usr-1792663890611-usslj",
+    "name": "Admin Officer",
+    "email": "officer@test.com",
+    "password": "$2b$10$9/URkl0DTjzmI6jY1GMTXeZxsE7kloG7E8MZ9i1ekNaxvpqJ6v9T6",
+    "role": "admin",
+    "createdAt": "2026-10-22T10:11:30.611Z"
+  },
+  {
+    "id": "usr-1792664447949-m5jwl",
+    "name": "saurav randwa",
+    "email": "sauravrandwa@gmail.com",
+    "password": "$2b$10$fMky7v0sap6l8KdKuQmwUu05sJHaOsqeP.ZQHvyH58BJje5l3VDfi",
+    "role": "user",
+    "createdAt": "2026-10-22T10:20:47.949Z"
+  }
+]
