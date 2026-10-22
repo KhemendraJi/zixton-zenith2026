@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicSense — Civic Intelligence</title>
+<style>
+:root{--bg:#f4f7fb;--panel:#fff;--ink:#172033;--muted:#68748a;--line:#e4e9f1;--blue:#315efb;--blue2:#eaf0ff;--green:#14805e;--amber:#b96b05;--red:#c43b43;--shadow:0 8px 28px rgba(26,45,82,.07)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:650}button:disabled{opacity:.55;cursor:not-allowed}.primary{background:var(--blue);color:white}.secondary{background:#edf1f7;color:#25324a}.danger{background:#fff0f0;color:var(--red)}.topbar{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 5vw;position:sticky;top:0;z-index:10}.brand{display:flex;align-items:center;gap:11px;font-weight:850;font-size:20px;letter-spacing:-.5px}.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#315efb,#19b9a4);display:grid;place-items:center;color:#fff;font-size:21px}.brand small{display:block;color:var(--muted);font-size:11px;letter-spacing:.2px;font-weight:600}.tabs{display:flex;gap:6px;background:#f1f4fa;padding:4px;border-radius:12px}.tabs button{background:transparent;color:#657189;padding:9px 14px}.tabs button.active{background:#fff;color:var(--blue);box-shadow:0 2px 8px #20305012}.container{max-width:1240px;margin:28px auto;padding:0 22px}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:24px}.eyebrow{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:1.5px;text-transform:uppercase}.hero h1{font-size:clamp(26px,4vw,36px);letter-spacing:-1px;margin:7px 0}.hero p{color:var(--muted);margin:0;max-width:650px;line-height:1.55}.pill{font-size:12px;border-radius:999px;padding:5px 9px;display:inline-flex;align-items:center;gap:5px;font-weight:750;background:#eef2f7;color:#536078}.pill.high{background:#fff0e5;color:#b65310}.pill.critical{background:#ffe7e8;color:#b4232d}.pill.medium{background:#fff6d9;color:#946200}.pill.low{background:#e2f7ee;color:#137753}.pill.status{background:#edf1ff;color:#3856c9}.layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(310px,.9fr);gap:20px;align-items:start}.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}.panel h2{font-size:18px;margin:0 0 5px;letter-spacing:-.3px}.sub{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 18px}.field{margin-bottom:15px}.field label{display:block;font-size:12px;font-weight:750;margin-bottom:7px;color:#3e4b62}.field input,.field textarea,.field select{width:100%;border:1px solid #dce3ed;border-radius:10px;padding:11px 12px;background:#fff;color:var(--ink);outline:none}.field textarea{min-height:110px;resize:vertical}.field input:focus,.field textarea:focus,.field select:focus{border-color:#8aa4ff;box-shadow:0 0 0 3px #315efb15}.row{display:flex;gap:12px}.row>*{flex:1;min-width:0}.hint{font-size:11px;color:var(--muted);margin-top:6px}.upload{border:1.5px dashed #cbd5e4;border-radius:12px;padding:17px;text-align:center;background:#fafcff}.upload input{border:0;padding:0;max-width:100%}.upload-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.upload-preview img{width:82px;height:72px;object-fit:cover;border-radius:9px;border:1px solid var(--line)}.locbox{background:#f6f8fc;border:1px solid var(--line);padding:12px;border-radius:12px}.locstatus{font-size:12px;color:var(--muted);margin-top:8px}.full{width:100%}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:17px;box-shadow:var(--shadow)}.stat .label{font-size:12px;color:var(--muted);font-weight:650}.stat .num{font-size:28px;font-weight:850;margin:7px 0 4px;letter-spacing:-1px}.stat .note{font-size:11px;color:var(--muted)}.list{display:flex;flex-direction:column;gap:11px}.issue{border:1px solid var(--line);border-radius:14px;padding:15px;background:#fff}.issuehead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.issue h3{margin:0 0 5px;font-size:15px}.issue p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}.meta{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.issuefoot{border-top:1px solid var(--line);padding-top:10px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.tiny{font-size:11px;color:var(--muted)}.issueimg{width:62px;height:62px;border-radius:10px;object-fit:cover;background:#edf1f7}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.filters select,.filters input{border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;color:var(--ink)}.empty{text-align:center;padding:36px 18px;color:var(--muted)}.empty .symbol{font-size:30px;margin-bottom:8px}.explain{background:#f6f8fc;border-radius:10px;padding:10px 12px;font-size:12px;color:#46536b;line-height:1.5;margin:9px 0}.bar{height:6px;background:#e8edf5;border-radius:99px;overflow:hidden;margin-top:7px}.bar span{display:block;height:100%;background:linear-gradient(90deg,#315efb,#18b99b)}.adminrow{display:grid;grid-template-columns:1fr 150px 140px;gap:8px;margin-top:10px}.adminrow select{min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px}.toast{position:fixed;right:22px;bottom:22px;max-width:350px;background:#172033;color:#fff;border-radius:12px;padding:13px 17px;box-shadow:var(--shadow);z-index:20;font-size:13px}.hidden{display:none!important}.mapframe{width:100%;height:230px;border:0;border-radius:12px;background:#eaf0f7}.footnote{font-size:11px;color:var(--muted);line-height:1.5;margin-top:12px}.sectiontitle{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.sectiontitle h2{margin:0}.separator{border:0;border-top:1px solid var(--line);margin:18px 0}.mini{font-size:12px;padding:7px 10px}.reviewbox{border:1px solid #f2d7aa;background:#fffaf0;padding:10px;border-radius:10px;font-size:12px;margin-top:8px;color:#805317}.tag{display:inline-block;background:#f0f3f8;padding:4px 7px;border-radius:6px;font-size:11px;color:#526078}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}.hero{align-items:flex-start;flex-direction:column}.topbar{padding:0 16px}.brand{font-size:17px}.tabs button{padding:8px 9px;font-size:12px}.adminrow{grid-template-columns:1fr}.container{padding:0 14px}.panel{padding:17px}}
+@media(max-width:520px){.topbar{height:auto;padding:12px 14px;align-items:flex-start;gap:12px;flex-direction:column}.cards{gap:8px}.stat{padding:12px}.stat .num{font-size:24px}.row{flex-direction:column;gap:0}.issuehead{align-items:flex-start}.hero h1{font-size:28px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="logo">✦</div><div>CivicSense<small>AI CIVIC INTELLIGENCE</small></div></div>
+  <div class="tabs"><button id="userTab" class="active" onclick="switchView('user')">Citizen portal</button><button id="adminTab" onclick="switchView('admin')">Admin dashboard</button></div>
+</header>
+<main class="container">
+<section id="userView">
+  <div class="hero"><div><div class="eyebrow">Your voice. Better neighbourhoods.</div><h1>Report an issue. Track the fix.</h1><p>Submit a civic problem and CivicSense will suggest its category, responsible department, priority, and possible related reports.</p></div><span class="pill status">● Prototype mode</span></div>
+  <div class="layout">
+    <section class="panel">
+      <h2>Report a civic issue</h2><p class="sub">Fields marked required must be completed. Location and photo help the team investigate faster.</p>
+      <form id="complaintForm">
+        <div class="field"><label for="reporter">Your name (optional)</label><input id="reporter" placeholder="e.g. Aditi Sharma"></div>
+        <div class="field"><label for="description">Describe the problem *</label><textarea id="description" required placeholder="e.g. A large pothole near the main gate is causing bikes to swerve..."></textarea><div class="hint">Tip: mention the issue and nearby landmark. The system analyses the text to suggest a category.</div></div>
+        <div class="row">
+          <div class="field"><label for="category">Category (optional)</label><select id="category"><option value="">Let CivicSense detect it</option><option>Roads & Potholes</option><option>Sanitation & Garbage</option><option>Water Supply</option><option>Streetlights & Electricity</option><option>Drainage & Sewage</option><option>Public Safety</option><option>Other</option></select></div>
+          <div class="field"><label for="landmark">Area / landmark</label><input id="landmark" placeholder="e.g. College main gate"></div>
+        </div>
+        <div class="field"><label>Photograph (optional)</label><div class="upload"><input id="photo" type="file" accept="image/*" multiple><div class="hint">Upload up to 3 photos. Images are stored in this browser for this demo.</div><div id="photoPreview" class="upload-preview"></div></div></div>
+        <div class="field"><label>Geographical location</label><div class="locbox"><div class="row"><div class="field"><label for="lat">Latitude</label><input id="lat" type="number" step="any" placeholder="e.g. 23.2599"></div><div class="field"><label for="lon">Longitude</label><input id="lon" type="number" step="any" placeholder="e.g. 77.4126"></div></div><button type="button" class="secondary mini" onclick="getLocation()">◎ Detect my location</button><div id="locstatus" class="locstatus">Use GPS or enter coordinates manually. Location permission is requested only when you click the button.</div></div></div>
+        <button class="primary full" type="submit">Analyse & submit complaint →</button>
+      </form>
+      <p class="footnote">Prototype note: classification and duplicate detection use transparent local rules, not a trained production AI model. Do not submit sensitive personal information.</p>
+    </section>
+    <section class="panel">
+      <div class="sectiontitle"><h2>Your submitted issues</h2><span id="userCount" class="pill">0 reports</span></div>
+      <p class="sub">Reports from this browser are shown here. Use the admin dashboard to review status and assignments.</p>
+      <div id="userIssues" class="list"></div>
+      <hr class="separator">
+      <h2>How CivicSense helps</h2><p class="sub">Each report gets an explainable priority, an automatic department recommendation, and a check for similar nearby reports.</p>
+      <div class="explain"><b>✦ Duplicate detection</b><br>Compares key terms and location proximity against reports already in this prototype.</div>
+      <div class="explain"><b>✦ Explainable priority</b><br>Shows why a report is marked low, medium, high, or critical.</div>
+      <div class="explain"><b>✦ Human review</b><br>Administrators can override the suggested category, priority, department, and status.</div>
+    </section>
+  </div>
+</section>
+<section id="adminView" class="hidden">
+  <div class="hero"><div><div class="eyebrow">Operations centre</div><h1>Admin dashboard</h1><p>Review incoming complaints, inspect duplicate suggestions, route work to departments, and keep the resolution trail up to date.</p></div><button class="secondary" onclick="exportData()">↓ Export CSV</button></div>
+  <div class="cards" id="stats"></div>
+  <div class="layout">
+    <section class="panel"><div class="sectiontitle"><h2>Complaint queue</h2><span id="adminCount" class="pill">0 total</span></div>
+      <div class="filters"><input id="search" placeholder="Search issue / ID / area" oninput="renderAdmin()"><select id="statusFilter" onchange="renderAdmin()"><option value="">All statuses</option><option>Filed</option><option>Assigned</option><option>In Progress</option><option>Resolved - Awaiting Citizen</option><option>Reopened</option><option>Closed</option></select><select id="priorityFilter" onchange="renderAdmin()"><option value="">All priorities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+      <div id="adminIssues" class="list"></div>
+    </section>
+    <section class="panel"><h2>Location intelligence</h2><p class="sub">Coordinate list and map preview for reports with valid latitude/longitude.</p><div id="mapArea"></div><div id="locationList" class="list"></div><hr class="separator"><h2>Department workload</h2><p class="sub">Counts are calculated from submitted complaints.</p><div id="deptStats"></div></section>
+  </div>
+  <p class="footnote">Admin view is a demo interface without authentication. In a real deployment, protect admin actions with role-based access control and server-side authorization.</p>
+</section>
+</main>
+<div id="toast" class="toast hidden"></div>
+<script>
+const STORE='civicsense_proto_v1';
+const categories=['Roads & Potholes','Sanitation & Garbage','Water Supply','Streetlights & Electricity','Drainage & Sewage','Public Safety','Other'];
+const departments={'Roads & Potholes':'Roads & Maintenance','Sanitation & Garbage':'Sanitation Department','Water Supply':'Water Supply Department','Streetlights & Electricity':'Electrical Department','Drainage & Sewage':'Drainage Department','Public Safety':'Public Safety / Ward Office','Other':'General Civic Services'};
+let photoData=[];
+function load(){try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch(e){return []}}
+function save(items){localStorage.setItem(STORE,JSON.stringify(items))}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function id(){return 'CS-'+Math.random().toString(36).slice(2,6).toUpperCase()+Date.now().toString().slice(-4)}
+function norm(s){return s.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=>w.length>2)}
+function classify(text,chosen){
+ if(chosen)return chosen;
+ const t=text.toLowerCase();
+ const rules=[
+  ['Roads & Potholes',['pothole','road','crater','asphalt','footpath','sidewalk','broken road','speed breaker']],
+  ['Sanitation & Garbage',['garbage','trash','waste','rubbish','dump','litter','smell','dirty','cleaning']],
+  ['Water Supply',['water leak','leakage','water supply','pipe burst','no water','tap','drinking water','overflowing pipe']],
+  ['Streetlights & Electricity',['streetlight','street light','light pole','electricity','power cut','wire','transformer','dark street']],
+  ['Drainage & Sewage',['drain','sewage','sewer','blocked drain','manhole','flooding','stagnant water']],
+  ['Public Safety',['unsafe','accident','danger','exposed wire','open manhole','hazard','traffic signal']]
+ ];
+ let best='Other',score=0;
+ for(const [cat,words] of rules){let n=words.reduce((a,w)=>a+(t.includes(w)?(w.includes(' ')?2:1):0),0);if(n>score){score=n;best=cat}}
+ return best;
+}
+function analyzePriority(text,cat,nearbyCount){
+ const t=text.toLowerCase();
+ let safety=(/injur|accident|danger|exposed wire|open manhole|fire|collapse|school|hospital|traffic/.test(t)?90:/risk|unsafe|dark|overflow|contaminat/.test(t)?65:35);
+ let severity=(/large|major|severe|burst|broken|blocked|overflow|collapse|exposed/.test(t)?85:/small|minor/.test(t)?25:55);
+ let impact=(/school|hospital|market|main road|bus stop|college|many people|residents/.test(t)?80:50);
+ let waiting=10;
+ let related=Math.min(100,nearbyCount*25);
+ let score=Math.round(.30*safety+.25*severity+.20*impact+.10*waiting+.15*related);
+ let priority=score>=85?'Critical':score>=70?'High':score>=45?'Medium':'Low';
+ return {score,priority,factors:{safety,severity,impact,waiting,related}};
+}
+function distance(a,b){if(a.lat==null||a.lon==null||b.lat==null||b.lon==null)return Infinity;const R=6371000,p=Math.PI/180,dp=(b.lat-a.lat)*p,dl=(b.lon-a.lon)*p;const x=Math.sin(dp/2)**2+Math.cos(a.lat*p)*Math.cos(b.lat*p)*Math.sin(dl/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function detectDuplicates(item,items){
+ const words=new Set(norm(item.description));const matches=[];
+ for(const old of items){if(old.id===item.id||old.status==='Closed')continue;
+  const ow=new Set(norm(old.description));const inter=[...words].filter(w=>ow.has(w)).length;const union=new Set([...words,...ow]).size;const sim=union?inter/union:0;
+  const dist=distance(item,old);const sameCat=item.category===old.category;
+  const lexical=sim>=.22 || (sameCat&&inter>=2);
+  const spatial=dist<=250;
+  const time=Math.abs(new Date(item.createdAt)-new Date(old.createdAt))<=30*86400000;
+  if((lexical&&spatial&&time)||(sim>=.55&&time)){matches.push({id:old.id,sim:Math.round(sim*100),distance:Number.isFinite(dist)?Math.round(dist):null,description:old.description})}
+ }
+ return matches.sort((a,b)=>b.sim-a.sim).slice(0,4);
+}
+function getLocation(){
+ const status=document.getElementById('locstatus');
+ if(!navigator.geolocation){status.textContent='Geolocation is not supported by this browser. Enter coordinates manually.';return}
+ status.textContent='Requesting location permission…';
+ navigator.geolocation.getCurrentPosition(pos=>{document.getElementById('lat').value=pos.coords.latitude.toFixed(6);document.getElementById('lon').value=pos.coords.longitude.toFixed(6);status.textContent='Location captured. Accuracy approximately '+Math.round(pos.coords.accuracy)+' metres.'},err=>{status.textContent=err.code===1?'Location permission denied. Enter coordinates manually.':'Could not detect location. Try HTTPS/localhost or enter coordinates manually.'},{enableHighAccuracy:true,timeout:10000});
+}
+document.getElementById('photo').addEventListener('change',async e=>{
+ const files=[...e.target.files].slice(0,3);photoData=[];
+ for(const f of files){if(!f.type.startsWith('image/'))continue;if(f.size>1.2*1024*1024){toast('Each image must be 1.2 MB or smaller in this browser demo.');continue}
+  const data=await new Promise(resolve=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.readAsDataURL(f)});photoData.push(data);
+ }
+ document.getElementById('photoPreview').innerHTML=photoData.map(x=>`<img src="${x}" alt="Selected complaint photo">`).join('');
+});
+document.getElementById('complaintForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const description=document.getElementById('description').value.trim();if(description.length<8){toast('Please describe the issue in a little more detail.');return}
+ const latVal=document.getElementById('lat').value,lonVal=document.getElementById('lon').value;
+ const lat=latVal===''?null:Number(latVal),lon=lonVal===''?null:Number(lonVal);
+ if((lat===null)!==(lon===null)){toast('Enter both latitude and longitude, or leave both blank.');return}
+ if(lat!==null&&(!Number.isFinite(lat)||!Number.isFinite(lon)||lat < -90||lat>90||lon < -180||lon>180)){toast('Please enter valid coordinates.');return}
+ const items=load(),cat=classify(description,document.getElementById('category').value);
+ const item={id:id(),reporter:document.getElementById('reporter').value.trim()||'Citizen',description,category:cat,department:departments[cat],landmark:document.getElementById('landmark').value.trim(),lat,lon,photos:[...photoData],createdAt:new Date().toISOString(),status:'Filed',history:[{at:new Date().toISOString(),action:'Complaint submitted',by:'Citizen'}],adminNote:'',verified:false};
+ const dup=detectDuplicates(item,items);item.duplicates=dup;
+ const p=analyzePriority(description,cat,dup.length);item.priority=p.priority;item.score=p.score;item.factors=p.factors;
+ if(dup.length){item.adminNote='Potential related report(s) detected; review before linking.'}
+ items.unshift(item);
+ try{save(items)}catch(err){item.photos=[];save(items);toast('Complaint saved, but photo storage limit was reached. Please use smaller images.')}
+ e.target.reset();photoData=[];document.getElementById('photoPreview').innerHTML='';document.getElementById('locstatus').textContent='Use GPS or enter coordinates manually.';
+ renderAll();toast('Complaint '+item.id+' submitted. Department suggested: '+item.department+'.');switchView('user');
+});
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.remove('hidden');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.add('hidden'),3800)}
+function switchView(view){document.getElementById('userView').classList.toggle('hidden',view!=='user');document.getElementById('adminView').classList.toggle('hidden',view!=='admin');document.getElementById('userTab').classList.toggle('active',view==='user');document.getElementById('adminTab').classList.toggle('active',view==='admin');if(view==='admin')renderAdmin()}
+function pillPriority(p){return `<span class="pill ${p.toLowerCase()}">${esc(p)} priority</span>`}
+function formatDate(d){return new Date(d).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+function locText(i){return i.lat!=null&&i.lon!=null?`${Number(i.lat).toFixed(5)}, ${Number(i.lon).toFixed(5)}`:'Location not provided'}
+function issueCard(i,admin=false){
+ const photos=(i.photos||[]);const img=photos.length?`<img class="issueimg" src="${photos[0]}" alt="Issue photo">`:'';
+ const duplicate=(i.duplicates||[]).length?`<div class="reviewbox">⚠ ${i.duplicates.length} possible related report(s): ${(i.duplicates||[]).map(d=>esc(d.id)).join(', ')}. Admin review recommended.</div>`:'';
+ const factors=i.factors||{safety:0,severity:0,impact:0,waiting:0,related:0};
+ const scoreLine=`<div class="explain"><b>Priority score: ${i.score}/100</b><div class="bar"><span style="width:${i.score}%"></span></div><div style="margin-top:6px">Safety ${factors.safety} · Severity ${factors.severity} · Community impact ${factors.impact} · Waiting ${factors.waiting} · Related reports ${factors.related}</div></div>`;
+ const statusOptions=['Filed','Assigned','In Progress','Resolved - Awaiting Citizen','Reopened','Closed'];
+ const categoryOptions=categories.map(c=>`<option ${i.category===c?'selected':''}>${c}</option>`).join('');
+ const deptOptions=[...new Set(Object.values(departments))].map(d=>`<option ${i.department===d?'selected':''}>${d}</option>`).join('');
+ return `<article class="issue"><div class="issuehead"><div><h3>${esc(i.id)} · ${esc(i.category)}</h3><p>${esc(i.description)}</p></div>${img}</div><div class="meta">${pillPriority(i.priority)}<span class="pill status">${esc(i.status)}</span><span class="tag">${esc(i.department)}</span></div><div class="tiny">📍 ${esc(i.landmark||'No landmark')} · ${esc(locText(i))} · ${formatDate(i.createdAt)}</div>${duplicate}${scoreLine}${admin?`<div class="adminrow"><select id="cat-${i.id}" aria-label="Category">${categoryOptions}</select><select id="dept-${i.id}" aria-label="Department">${deptOptions}</select><select id="status-${i.id}" aria-label="Status">${statusOptions.map(s=>`<option ${i.status===s?'selected':''}>${s}</option>`).join('')}</select></div><div class="adminrow"><select id="pri-${i.id}" aria-label="Priority">${['Critical','High','Medium','Low'].map(s=>`<option ${i.priority===s?'selected':''}>${s}</option>`).join('')}</select><input id="note-${i.id}" placeholder="Admin review note" value="${esc(i.adminNote||'')}" style="border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px"><button class="primary mini" onclick="updateIssue('${i.id}')">Save review</button></div>${(i.duplicates||[]).length?`<button class="secondary mini" style="margin-top:8px" onclick="reviewDuplicates('${i.id}')">Mark duplicate suggestions reviewed</button>`:''}${i.status==='Resolved - Awaiting Citizen'?`<button class="secondary mini" style="margin-top:8px" onclick="citizenVerify('${i.id}')">Simulate citizen confirms fix</button>`:''}`:`<div class="issuefoot"><span class="tiny">Department: ${esc(i.department)}</span><button class="secondary mini" onclick="showTracking('${i.id}')">View tracking</button></div>`}</article>`;
+}
+function showTracking(id){const i=load().find(x=>x.id===id);if(!i)return;const hist=(i.history||[]).map(h=>`${formatDate(h.at)} — ${h.action} (${h.by})`).join('\\n');alert(`Tracking ${i.id}\\nStatus: ${i.status}\\nDepartment: ${i.department}\\nPriority: ${i.priority} (${i.score}/100)\\n\\nHistory:\\n${hist}`)}
+function renderUser(){const items=load();document.getElementById('userCount').textContent=items.length+' reports';document.getElementById('userIssues').innerHTML=items.length?items.map(i=>issueCard(i,false)).join(''):`<div class="empty"><div class="symbol">⌁</div><b>No complaints yet</b><p>Submit your first issue using the form.</p></div>`}
+function renderAdmin(){
+ const all=load();document.getElementById('adminCount').textContent=all.length+' total';
+ const active=all.filter(i=>!['Closed'].includes(i.status)).length,critical=all.filter(i=>i.priority==='Critical'&&i.status!=='Closed').length,review=all.filter(i=>(i.duplicates||[]).length&&!(i.duplicatesReviewed)).length,resolved=all.filter(i=>['Closed','Resolved - Awaiting Citizen'].includes(i.status)).length;
+ document.getElementById('stats').innerHTML=[['Total reports',all.length,'All submitted complaints'],['Open issues',active,'Not closed'],['Critical',critical,'Requires urgent review'],['Awaiting / resolved',resolved,'Pending citizen confirmation may remain']].map(s=>`<div class="stat"><div class="label">${s[0]}</div><div class="num">${s[1]}</div><div class="note">${s[2]}</div></div>`).join('');
+ const q=(document.getElementById('search').value||'').toLowerCase(),st=document.getElementById('statusFilter').value,pr=document.getElementById('priorityFilter').value;
+ const list=all.filter(i=>(!q||[i.id,i.description,i.landmark,i.category,i.department].join(' ').toLowerCase().includes(q))&&(!st||i.status===st)&&(!pr||i.priority===pr));
+ document.getElementById('adminIssues').innerHTML=list.length?list.map(i=>issueCard(i,true)).join(''):`<div class="empty">No complaints match these filters.</div>`;
+ const withLoc=all.filter(i=>i.lat!=null&&i.lon!=null);
+ const mapArea=document.getElementById('mapArea');
+ if(withLoc.length){const avgLat=withLoc.reduce((a,i)=>a+Number(i.lat),0)/withLoc.length,avgLon=withLoc.reduce((a,i)=>a+Number(i.lon),0)/withLoc.length;mapArea.innerHTML=`<iframe class="mapframe" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=${avgLon-.025}%2C${avgLat-.02}%2C${avgLon+.025}%2C${avgLat+.02}&layer=mapnik&marker=${avgLat}%2C${avgLon}" title="OpenStreetMap location preview"></iframe>`}else{mapArea.innerHTML='<div class="empty" style="background:#f6f8fc;border-radius:12px"><div class="symbol">⌖</div><b>No coordinates yet</b><p>Capture GPS or enter coordinates on a new report to show a map preview.</p></div>'}
+ document.getElementById('locationList').innerHTML=withLoc.length?withLoc.slice(0,8).map(i=>`<div class="issue"><b style="font-size:12px">${esc(i.id)} · ${esc(i.landmark||i.category)}</b><div class="tiny" style="margin-top:5px">${esc(locText(i))} · ${esc(i.priority)}</div></div>`).join(''):'';
+ const depts=[...new Set(Object.values(departments))];document.getElementById('deptStats').innerHTML=depts.map(d=>{const n=all.filter(i=>i.department===d&&i.status!=='Closed').length;return `<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;font-size:12px"><span>${esc(d)}</span><b>${n}</b></div><div class="bar"><span style="width:${all.length?Math.max(n/all.length*100,n?5:0):0}%"></span></div></div>`}).join('');
+}
+function updateIssue(id){
+ const items=load(),i=items.find(x=>x.id===id);if(!i)return;
+ const oldStatus=i.status,oldCat=i.category,oldDept=i.department,oldPri=i.priority;
+ i.category=document.getElementById('cat-'+id).value;i.department=document.getElementById('dept-'+id).value;i.status=document.getElementById('status-'+id).value;i.priority=document.getElementById('pri-'+id).value;i.adminNote=document.getElementById('note-'+id).value;
+ const at=new Date().toISOString();
+ if(oldCat!==i.category)i.history.push({at,action:`Category changed: ${oldCat} → ${i.category}`,by:'Admin'});
+ if(oldDept!==i.department)i.history.push({at,action:`Department changed: ${oldDept} → ${i.department}`,by:'Admin'});
+ if(oldPri!==i.priority)i.history.push({at,action:`Priority changed: ${oldPri} → ${i.priority}`,by:'Admin'});
+ if(oldStatus!==i.status){i.history.push({at,action:`Status changed: ${oldStatus} → ${i.status}`,by:'Admin'});if(i.status==='Resolved - Awaiting Citizen')i.verified=false;if(i.status==='Closed')i.verified=true}
+ i.history.push({at,action:'Administrator review saved',by:'Admin'});save(items);renderAll();toast('Review saved for '+id);
+}
+function reviewDuplicates(id){const items=load(),i=items.find(x=>x.id===id);if(!i)return;i.duplicatesReviewed=true;i.history.push({at:new Date().toISOString(),action:'Duplicate suggestions reviewed by administrator',by:'Admin'});save(items);renderAll();toast('Duplicate review recorded. Original reports remain preserved.')}
+function citizenVerify(id){const items=load(),i=items.find(x=>x.id===id);if(!i)return;i.status='Closed';i.verified=true;i.history.push({at:new Date().toISOString(),action:'Citizen confirmed resolution (prototype simulation)',by:'Citizen'});save(items);renderAll();toast('Citizen confirmation recorded; issue closed.')}
+function exportData(){const items=load();const cols=['id','description','category','department','priority','score','status','landmark','lat','lon','createdAt'];const csv=[cols.join(','),...items.map(i=>cols.map(c=>`"${String(i[c]??'').replace(/"/g,'""')}"`).join(','))].join('\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='civicsense-complaints.csv';a.click();URL.revokeObjectURL(a.href)}
+function renderAll(){renderUser();renderAdmin()}
+renderAll();
+</script>
+</body></html>
