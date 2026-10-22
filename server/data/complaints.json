@@ -1,5 +1,71 @@
 [
   {
+    "id": "CS-C1B37122",
+    "userId": "usr-1792667317102-2ax4x",
+    "userEmail": "user2_1792667316983@test.com",
+    "reporter": "User Two",
+    "description": "Garbage pile near User2 park",
+    "category": "Sanitation & Garbage",
+    "department": "Sanitation Department",
+    "landmark": "Green Park",
+    "lat": null,
+    "lon": null,
+    "photos": [],
+    "createdAt": "2026-10-22T11:08:37.122Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T11:08:37.122Z",
+        "action": "Complaint submitted",
+        "by": "User Two (user2_1792667316983@test.com)"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 35,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 50,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
+    "id": "CS-948C7113",
+    "userId": "usr-1792667316974-r4902",
+    "userEmail": "user1_1792667316843@test.com",
+    "reporter": "User One",
+    "description": "Pothole on Main Road near User1 home",
+    "category": "Roads & Potholes",
+    "department": "Roads & Maintenance",
+    "landmark": "Main Road",
+    "lat": null,
+    "lon": null,
+    "photos": [],
+    "createdAt": "2026-10-22T11:08:37.112Z",
+    "status": "Filed",
+    "history": [
+      {
+        "at": "2026-10-22T11:08:37.112Z",
+        "action": "Complaint submitted",
+        "by": "User One (user1_1792667316843@test.com)"
+      }
+    ],
+    "adminNote": "",
+    "duplicates": [],
+    "score": 41,
+    "priority": "Low",
+    "factors": {
+      "safety": 35,
+      "severity": 55,
+      "impact": 80,
+      "waiting": 10,
+      "related": 0
+    }
+  },
+  {
     "id": "CS-A4ED7132",
     "userId": "usr-1792664447949-m5jwl",
     "userEmail": "sauravrandwa@gmail.com",

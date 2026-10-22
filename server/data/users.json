@@ -46,5 +46,21 @@
     "password": "$2b$10$fMky7v0sap6l8KdKuQmwUu05sJHaOsqeP.ZQHvyH58BJje5l3VDfi",
     "role": "user",
     "createdAt": "2026-10-22T10:20:47.949Z"
+  },
+  {
+    "id": "usr-1792667316974-r4902",
+    "name": "User One",
+    "email": "user1_1792667316843@test.com",
+    "password": "$2b$10$5GxtZl63B2SxW5y8r/wU3u0pcwCRJ9gjb2o9d5aROV6U.tWBxJey.",
+    "role": "user",
+    "createdAt": "2026-10-22T11:08:36.974Z"
+  },
+  {
+    "id": "usr-1792667317102-2ax4x",
+    "name": "User Two",
+    "email": "user2_1792667316983@test.com",
+    "password": "$2b$10$H2RIieXR4DwaJuudax08u.4zxG8Il/p6LR0UiyELOoimR5/WnqKvy",
+    "role": "user",
+    "createdAt": "2026-10-22T11:08:37.102Z"
   }
 ]

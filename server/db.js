@@ -244,22 +244,26 @@ export async function createUser({ name, email, password, role }) {
 
 // Complaints operations
 export async function getComplaints({ user = null } = {}) {
-  // If user is admin, return all complaints.
-  // If user is citizen (user), return only their complaints!
-  // If no user specified (public / unauthenticated), return all or filter as appropriate.
-  const isAdmin = user && user.role === 'admin'
-  const isCitizen = user && user.role === 'user'
+  // If not logged in, return empty array so unauthenticated visitors cannot see any user's personal complaints
+  if (!user) {
+    return []
+  }
+
+  const isAdmin = user.role === 'admin'
+  const isCitizen = user.role === 'user'
 
   if (isMongoConnected) {
     try {
       let query = {}
       if (isCitizen) {
-        query = {
-          $or: [
-            { userId: user.id },
-            { userEmail: user.email.toLowerCase() }
-          ]
+        const orConditions = [{ userEmail: user.email.toLowerCase() }]
+        if (user.id) {
+          orConditions.push({ userId: user.id })
+          if (mongoose.Types.ObjectId.isValid(user.id)) {
+            orConditions.push({ userId: new mongoose.Types.ObjectId(user.id) })
+          }
         }
+        query = { $or: orConditions }
       }
       const items = await Complaint.find(query).sort({ createdAt: -1 }).lean()
       return items.map(formatComplaint)
@@ -275,7 +279,10 @@ export async function getComplaints({ user = null } = {}) {
       (c.userEmail && c.userEmail.toLowerCase() === user.email.toLowerCase())
     )
   }
-  return local
+  if (isAdmin) {
+    return local
+  }
+  return []
 }
 
 export async function createComplaint(complaintData) {

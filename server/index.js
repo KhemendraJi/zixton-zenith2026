@@ -207,13 +207,17 @@ app.get('/api/auth/me', async (req, res) => {
 // ==================== COMPLAINTS ROUTES ====================
 
 // GET complaints:
-// Admins or unauthenticated query with ?all=true get all complaints.
-// Authenticated citizens get their own complaints.
+// If unauthenticated: returns empty array [].
+// If authenticated citizen: returns only the citizen's own submitted problems.
+// If authenticated admin: returns all complaints.
 app.get('/api/complaints', async (req, res) => {
   try {
-    const showAll = req.query.all === 'true' || (req.user && req.user.role === 'admin')
+    if (!req.user) {
+      return res.json([])
+    }
+
     const items = await getComplaints({
-      user: showAll ? null : req.user
+      user: req.user
     })
     res.json(items)
   } catch (error) {
@@ -223,9 +227,13 @@ app.get('/api/complaints', async (req, res) => {
 })
 
 // POST complaint:
-// Saves complaint and attributes it to current logged-in user if available.
+// Requires authentication. User must be logged in to report a problem.
 app.post('/api/complaints', upload.array('photos', 3), async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Authentication required. Please log in to report a problem.' })
+    }
+
     const {
       description,
       reporter: passedReporter,
@@ -252,9 +260,9 @@ app.post('/api/complaints', upload.array('photos', 3), async (req, res) => {
     const analysis = priority(description)
     const now = new Date().toISOString()
 
-    const reporterName = passedReporter?.trim() || req.user?.name || 'Citizen'
-    const userId = req.user?.id || null
-    const userEmail = req.user?.email || ''
+    const reporterName = req.user.name || passedReporter?.trim() || 'Citizen'
+    const userId = req.user.id
+    const userEmail = req.user.email
 
     const item = {
       id: `CS-${crypto.randomUUID().slice(0, 4).toUpperCase()}${Date.now().toString().slice(-4)}`,
