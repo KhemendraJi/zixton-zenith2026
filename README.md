@@ -1,29 +1,39 @@
-# CivicSense working prototype
+# CivicSense
 
-## Run it
-1. Extract the ZIP.
-2. Open `index.html` in a modern browser.
-3. For GPS location detection, use localhost or HTTPS and grant browser location permission. If opening the file directly blocks geolocation, start a local server from this folder:
-   - Python: `python -m http.server 8000`
-   - Then open `http://localhost:8000`
-4. Use the Citizen portal to submit reports. Switch to Admin dashboard to review them.
+CivicSense is a hackathon-ready civic issue reporting and operations dashboard. Citizens submit problems with an optional location and photo; the backend provides category and priority suggestions. Administrators can review, filter, route, and update each report.
 
-## Included
-- Citizen submission form
-- Photo upload and local browser storage
-- GPS detection and manual latitude/longitude
-- Rule-based category detection and department recommendation
-- Explainable priority scoring
-- Heuristic duplicate suggestions using text overlap, distance and time
-- Admin status/category/department/priority review
-- Duplicate review, simulated citizen resolution confirmation
-- Complaint history, dashboard metrics, department workload, CSV export
-- OpenStreetMap location preview when coordinates exist
+## Stack
 
-## Prototype limitations
-- Data is saved in the current browser's localStorage; it is not shared across devices or users.
-- This is a frontend-only prototype. There is no authentication, server, database, or production AI model.
-- Category detection and duplicate matching are transparent heuristics, not trained AI. Duplicate suggestions require human review.
-- Photo storage is limited by browser storage; each image is capped at 1.2 MB and up to three images are accepted.
-- The map preview requires internet access. Browser GPS generally requires localhost or HTTPS.
-- Do not use real sensitive citizen data. Add backend validation, authentication, role-based authorization, secure file storage, and server-side audit logs before deployment.
+- React + Vite
+- Tailwind CSS
+- Express API
+- JSON file datastore (`server/data/complaints.json`) and local image uploads (`server/uploads/`)
+
+This backend was intentionally selected for speed: it needs no account, database provisioning, or connection string, making it ideal for a 10-hour demo. Replace the JSON store with Supabase/Firebase/MongoDB before a production deployment.
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+Open the Vite URL shown in the terminal (normally `http://localhost:5173`). The API runs on `http://localhost:5000`; Vite forwards `/api` and `/uploads` requests automatically.
+
+## Useful commands
+
+```bash
+npm run build   # create a production frontend bundle in dist/
+npm start       # run only the backend API
+```
+
+## API
+
+- `GET /api/health` — basic health check
+- `GET /api/complaints` — list complaints
+- `POST /api/complaints` — submit a complaint (multipart, accepts up to three `photos`)
+- `PATCH /api/complaints/:id` — save administrative review fields
+
+## Demo notes
+
+The automatic categorisation and priority score are transparent keyword heuristics intended for demonstration. The dashboard currently has no authentication; add role-based authentication, durable managed storage, file scanning, and stricter validation before production use.
