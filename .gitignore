@@ -1,5 +1,3 @@
 node_modules/
-dist/
-server/data/
-server/uploads/
+
 .env
